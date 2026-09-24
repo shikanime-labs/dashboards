@@ -1,6 +1,6 @@
 {
-  "title": "SLO / Overview",
-  "uid": "app-slo",
+  "title": "Blackbox",
+  "uid": "blackbox",
   "timezone": "utc",
   "refresh": "1m",
   "time": {
@@ -30,6 +30,239 @@
   "panels": [
     {
       "id": 1,
+      "type": "stat",
+      "title": "Endpoints up",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "count(probe_success{job=\"blackbox\"} == 1)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 38
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Endpoints down now",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "count(probe_success{job=\"blackbox\"} == 0) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Fleet availability (30d)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 97
+              },
+              {
+                "color": "green",
+                "value": 99
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Error budget consumed (30d, fleet avg)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "clamp_min(100 - avg(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100, 0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "row",
+      "title": "Uptime",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 6,
+      "type": "state-timeline",
+      "title": "Uptime timeline",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "expr": "probe_success{job=\"blackbox\"}",
+          "refId": "A",
+          "legendFormat": "{{endpoint}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 7,
       "type": "table",
       "title": "Availability (30d SLI, 99% objective)",
       "datasource": {
@@ -38,9 +271,9 @@
       },
       "gridPos": {
         "h": 18,
-        "w": 18,
+        "w": 14,
         "x": 0,
-        "y": 0
+        "y": 19
       },
       "targets": [
         {
@@ -96,93 +329,88 @@
       }
     },
     {
-      "id": 2,
-      "type": "stat",
-      "title": "Endpoints down now",
+      "id": 8,
+      "type": "table",
+      "title": "TLS certificate expiry",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 0
+        "h": 18,
+        "w": 10,
+        "x": 14,
+        "y": 19
       },
       "targets": [
         {
-          "expr": "count(probe_success{job=\"blackbox\"} == 0) or vector(0)",
+          "expr": "sort_asc((probe_ssl_earliest_cert_expiry{job=\"blackbox\"} - time()) / 86400)",
           "instant": true,
-          "refId": "A"
+          "refId": "A",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true
+            },
+            "renameByName": {
+              "Value": "days left",
+              "instance": "endpoint"
+            }
+          }
         }
       ],
       "fieldConfig": {
         "defaults": {
+          "unit": "d",
+          "custom": {
+            "align": "auto"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
               {
                 "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      }
-    },
-    {
-      "id": 3,
-      "type": "stat",
-      "title": "Error budget consumed (30d, fleet avg)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 8
-      },
-      "targets": [
-        {
-          "expr": "clamp_min(100 - avg(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100, 0)",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "max": 1,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
                 "value": null
               },
               {
                 "color": "yellow",
-                "value": 0.5
+                "value": 14
               },
               {
-                "color": "red",
-                "value": 1
+                "color": "green",
+                "value": 30
               }
             ]
           }
         },
         "overrides": []
+      },
+      "options": {
+        "showHeader": true
       }
     },
     {
-      "id": 4,
+      "id": 9,
+      "type": "row",
+      "title": "Latency",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 10,
       "type": "timeseries",
       "title": "Probe latency by endpoint",
       "datasource": {
@@ -193,7 +421,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 38
       },
       "targets": [
         {
@@ -220,9 +448,9 @@
       }
     },
     {
-      "id": 5,
+      "id": 11,
       "type": "timeseries",
-      "title": "Availability by endpoint (1h window)",
+      "title": "HTTP duration phases (fleet p95)",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -231,37 +459,28 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 48
       },
       "targets": [
         {
-          "expr": "avg_over_time(probe_success{job=\"blackbox\"}[1h]) * 100",
+          "expr": "quantile_over_time(0.95, probe_http_duration_seconds{job=\"blackbox\", phase=\"connect\"}[5m])",
           "refId": "A",
-          "legendFormat": "{{endpoint}}"
+          "legendFormat": "connect {{endpoint}}"
+        },
+        {
+          "expr": "quantile_over_time(0.95, probe_http_duration_seconds{job=\"blackbox\", phase=\"processing\"}[5m])",
+          "refId": "B",
+          "legendFormat": "processing {{endpoint}}"
+        },
+        {
+          "expr": "quantile_over_time(0.95, probe_http_duration_seconds{job=\"blackbox\", phase=\"tls\"}[5m])",
+          "refId": "C",
+          "legendFormat": "tls {{endpoint}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
-          "min": 0,
-          "max": 100,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 97
-              },
-              {
-                "color": "green",
-                "value": 99
-              }
-            ]
-          }
+          "unit": "s"
         },
         "overrides": []
       },
@@ -271,7 +490,7 @@
           "placement": "right",
           "calcs": [
             "lastNotNull",
-            "min"
+            "max"
           ]
         }
       }
