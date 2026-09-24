@@ -1,8 +1,18 @@
 {
   "title": "Blackbox",
   "uid": "blackbox",
+  "tags": [
+    "blackbox",
+    "prometheus",
+    "uptime",
+    "shikanime"
+  ],
   "timezone": "utc",
+  "editable": true,
+  "graphTooltip": 1,
   "refresh": "1m",
+  "schemaVersion": 42,
+  "version": 1,
   "time": {
     "from": "now-24h",
     "to": "now"
@@ -10,20 +20,19 @@
   "templating": {
     "list": [
       {
+        "name": "datasource",
+        "label": "Datasource",
+        "type": "datasource",
+        "query": "prometheus",
         "current": {
           "text": "VictoriaMetrics",
           "value": "VictoriaMetrics",
           "selected": true
         },
         "hide": 2,
-        "includeAll": false,
-        "label": "Datasource",
-        "name": "datasource",
-        "options": [],
-        "query": "prometheus",
         "refresh": 1,
-        "regex": "",
-        "type": "datasource"
+        "includeAll": false,
+        "options": []
       }
     ]
   },
@@ -37,16 +46,21 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
+        "h": 8,
+        "w": 3,
         "x": 0,
         "y": 0
       },
       "targets": [
         {
-          "expr": "count(probe_success{job=\"blackbox\"} == 1)",
-          "instant": true,
-          "refId": "A"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "count(probe_success{job=\"blackbox\"} == 1) or vector(0)",
+          "refId": "A",
+          "legendFormat": "",
+          "instant": true
         }
       ],
       "fieldConfig": {
@@ -66,6 +80,16 @@
           }
         },
         "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
       }
     },
     {
@@ -77,16 +101,21 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
+        "h": 8,
+        "w": 3,
+        "x": 3,
         "y": 0
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "expr": "count(probe_success{job=\"blackbox\"} == 0) or vector(0)",
-          "instant": true,
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "",
+          "instant": true
         }
       ],
       "fieldConfig": {
@@ -106,6 +135,16 @@
           }
         },
         "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
       }
     },
     {
@@ -117,21 +156,27 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
+        "h": 8,
+        "w": 3,
+        "x": 6,
         "y": 0
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100",
-          "instant": true,
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "",
+          "instant": true
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
+          "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -141,7 +186,7 @@
               },
               {
                 "color": "yellow",
-                "value": 97
+                "value": 95
               },
               {
                 "color": "green",
@@ -151,33 +196,48 @@
           }
         },
         "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
       }
     },
     {
       "id": 4,
       "type": "stat",
-      "title": "Error budget consumed (30d, fleet avg)",
+      "title": "Average probe duration",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
+        "h": 8,
+        "w": 3,
+        "x": 9,
         "y": 0
       },
       "targets": [
         {
-          "expr": "clamp_min(100 - avg(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100, 0)",
-          "instant": true,
-          "refId": "A"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "avg(probe_duration_seconds{job=\"blackbox\"})",
+          "refId": "A",
+          "legendFormat": "",
+          "instant": true
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
-          "max": 1,
+          "unit": "s",
+          "decimals": 3,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -197,56 +257,59 @@
           }
         },
         "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
       }
     },
     {
       "id": 5,
-      "type": "row",
-      "title": "Uptime",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 4
-      },
-      "collapsed": false,
-      "panels": []
-    },
-    {
-      "id": 6,
-      "type": "state-timeline",
-      "title": "Uptime timeline",
+      "type": "timeseries",
+      "title": "Probe success",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 14,
-        "w": 24,
+        "h": 9,
+        "w": 6,
         "x": 0,
-        "y": 5
+        "y": 8
       },
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
           "expr": "probe_success{job=\"blackbox\"}",
           "refId": "A",
-          "legendFormat": "{{endpoint}}"
+          "legendFormat": "{{instance}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": true,
+            "showPoints": "never",
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           }
         },
         "overrides": []
@@ -256,231 +319,274 @@
           "displayMode": "table",
           "placement": "right",
           "calcs": [
+            "mean",
+            "max",
             "lastNotNull"
           ]
+        },
+        "tooltip": {
+          "mode": "multi"
         }
       }
     },
     {
-      "id": 7,
-      "type": "table",
-      "title": "Availability (30d SLI, 99% objective)",
+      "id": 6,
+      "type": "timeseries",
+      "title": "HTTP status code",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 18,
-        "w": 14,
-        "x": 0,
-        "y": 19
+        "h": 9,
+        "w": 6,
+        "x": 6,
+        "y": 8
       },
       "targets": [
         {
-          "expr": "sort_desc(avg_over_time(probe_success{job=\"blackbox\"}[30d]) * 100)",
-          "instant": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "probe_http_status_code{job=\"blackbox\"}",
           "refId": "A",
-          "format": "table"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": true,
-              "job": true
-            },
-            "renameByName": {
-              "Value": "availability %",
-              "instance": "endpoint"
-            }
-          }
+          "legendFormat": "{{instance}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
+          "unit": "none",
           "custom": {
-            "align": "auto"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 97
-              },
-              {
-                "color": "green",
-                "value": 99
-              }
-            ]
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": true,
+            "showPoints": "never",
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           }
         },
         "overrides": []
       },
       "options": {
-        "showHeader": true
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
       }
     },
     {
-      "id": 8,
-      "type": "table",
-      "title": "TLS certificate expiry",
+      "id": 7,
+      "type": "timeseries",
+      "title": "TLS certificate expiry (days)",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 18,
-        "w": 10,
-        "x": 14,
-        "y": 19
+        "h": 9,
+        "w": 6,
+        "x": 0,
+        "y": 17
       },
       "targets": [
         {
-          "expr": "sort_asc((probe_ssl_earliest_cert_expiry{job=\"blackbox\"} - time()) / 86400)",
-          "instant": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "(probe_ssl_earliest_cert_expiry{job=\"blackbox\"} - time()) / 86400",
           "refId": "A",
-          "format": "table"
-        }
-      ],
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": true,
-              "job": true
-            },
-            "renameByName": {
-              "Value": "days left",
-              "instance": "endpoint"
-            }
-          }
+          "legendFormat": "{{instance}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "d",
           "custom": {
-            "align": "auto"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 14
-              },
-              {
-                "color": "green",
-                "value": 30
-              }
-            ]
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": true,
+            "showPoints": "never",
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
           }
         },
         "overrides": []
       },
       "options": {
-        "showHeader": true
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "DNS lookup time",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 6,
+        "y": 17
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "probe_dns_lookup_time_seconds{job=\"blackbox\"}",
+          "refId": "A",
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": true,
+            "showPoints": "never",
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
       }
     },
     {
       "id": 9,
-      "type": "row",
-      "title": "Latency",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 37
-      },
-      "collapsed": false,
-      "panels": []
-    },
-    {
-      "id": 10,
       "type": "timeseries",
-      "title": "Probe latency by endpoint",
+      "title": "Probe duration by phase",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 10,
-        "w": 24,
+        "h": 9,
+        "w": 6,
         "x": 0,
-        "y": 38
+        "y": 26
       },
       "targets": [
         {
-          "expr": "avg_over_time(probe_duration_seconds{job=\"blackbox\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"resolve\"})",
           "refId": "A",
-          "legendFormat": "{{endpoint}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ]
-        }
-      }
-    },
-    {
-      "id": 11,
-      "type": "timeseries",
-      "title": "HTTP duration phases (fleet p95)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 48
-      },
-      "targets": [
-        {
-          "expr": "quantile_over_time(0.95, probe_http_duration_seconds{job=\"blackbox\", phase=\"connect\"}[5m])",
-          "refId": "A",
-          "legendFormat": "connect {{endpoint}}"
+          "legendFormat": "resolve"
         },
         {
-          "expr": "quantile_over_time(0.95, probe_http_duration_seconds{job=\"blackbox\", phase=\"processing\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"connect\"})",
           "refId": "B",
-          "legendFormat": "processing {{endpoint}}"
+          "legendFormat": "connect"
         },
         {
-          "expr": "quantile_over_time(0.95, probe_http_duration_seconds{job=\"blackbox\", phase=\"tls\"}[5m])",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"tls\"})",
           "refId": "C",
-          "legendFormat": "tls {{endpoint}}"
+          "legendFormat": "tls"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"processing\"})",
+          "refId": "D",
+          "legendFormat": "processing"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"transfer\"})",
+          "refId": "E",
+          "legendFormat": "transfer"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s"
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": true,
+            "showPoints": "never",
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          }
         },
         "overrides": []
       },
@@ -489,18 +595,15 @@
           "displayMode": "table",
           "placement": "right",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "mean",
+            "max",
+            "lastNotNull"
           ]
+        },
+        "tooltip": {
+          "mode": "multi"
         }
       }
     }
-  ],
-  "schemaVersion": 41,
-  "version": 1,
-  "tags": [
-    "shikanime"
-  ],
-  "editable": true,
-  "graphTooltip": 1
+  ]
 }
