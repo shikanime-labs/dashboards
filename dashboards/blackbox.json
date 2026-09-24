@@ -38,18 +38,31 @@
   },
   "panels": [
     {
+      "id": 100,
+      "type": "row",
+      "title": "Summary",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
       "id": 1,
       "type": "stat",
-      "title": "Endpoints up",
+      "title": "Probes up",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
+        "h": 4,
+        "w": 6,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -59,7 +72,6 @@
           },
           "expr": "count(probe_success{job=\"blackbox\"} == 1) or vector(0)",
           "refId": "A",
-          "legendFormat": "",
           "instant": true
         }
       ],
@@ -88,23 +100,23 @@
           ]
         },
         "colorMode": "value",
-        "graphMode": "none",
+        "graphMode": "area",
         "textMode": "auto"
       }
     },
     {
       "id": 2,
       "type": "stat",
-      "title": "Endpoints down now",
+      "title": "Probes down",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
-        "x": 3,
-        "y": 0
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
       },
       "targets": [
         {
@@ -114,7 +126,6 @@
           },
           "expr": "count(probe_success{job=\"blackbox\"} == 0) or vector(0)",
           "refId": "A",
-          "legendFormat": "",
           "instant": true
         }
       ],
@@ -143,23 +154,23 @@
           ]
         },
         "colorMode": "value",
-        "graphMode": "none",
+        "graphMode": "area",
         "textMode": "auto"
       }
     },
     {
       "id": 3,
       "type": "stat",
-      "title": "Fleet availability (30d)",
+      "title": "Availability (30d)",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
-        "x": 6,
-        "y": 0
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
       },
       "targets": [
         {
@@ -169,7 +180,6 @@
           },
           "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100",
           "refId": "A",
-          "legendFormat": "",
           "instant": true
         }
       ],
@@ -204,7 +214,7 @@
           ]
         },
         "colorMode": "value",
-        "graphMode": "none",
+        "graphMode": "area",
         "textMode": "auto"
       }
     },
@@ -217,10 +227,10 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 3,
-        "x": 9,
-        "y": 0
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
       },
       "targets": [
         {
@@ -230,7 +240,6 @@
           },
           "expr": "avg(probe_duration_seconds{job=\"blackbox\"})",
           "refId": "A",
-          "legendFormat": "",
           "instant": true
         }
       ],
@@ -265,9 +274,22 @@
           ]
         },
         "colorMode": "value",
-        "graphMode": "none",
+        "graphMode": "area",
         "textMode": "auto"
       }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "Per endpoint",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "collapsed": false,
+      "panels": []
     },
     {
       "id": 5,
@@ -278,10 +300,10 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 9,
-        "w": 6,
+        "h": 8,
+        "w": 24,
         "x": 0,
-        "y": 8
+        "y": 6
       },
       "targets": [
         {
@@ -338,10 +360,10 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 6,
-        "y": 8
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 14
       },
       "targets": [
         {
@@ -392,16 +414,16 @@
     {
       "id": 7,
       "type": "timeseries",
-      "title": "TLS certificate expiry (days)",
+      "title": "TLS certificate expiry",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 9,
-        "w": 6,
+        "h": 8,
+        "w": 24,
         "x": 0,
-        "y": 17
+        "y": 22
       },
       "targets": [
         {
@@ -458,10 +480,10 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 6,
-        "y": 17
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 30
       },
       "targets": [
         {
@@ -518,10 +540,10 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 9,
-        "w": 6,
+        "h": 8,
+        "w": 24,
         "x": 0,
-        "y": 26
+        "y": 38
       },
       "targets": [
         {
