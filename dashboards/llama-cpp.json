@@ -2064,7 +2064,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "llama.cpp Monitoring",
+  "title": "llama.cpp",
   "uid": "llamacpp-monitoring",
   "version": 2,
   "weekStart": "",
