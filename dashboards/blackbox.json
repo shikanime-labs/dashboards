@@ -75,7 +75,7 @@
   "panels": [
     {
       "type": "gauge",
-      "description": "Remaining share of the 1% availability error budget for the least reliable active endpoint over 30 days. Red means that endpoint has exhausted its allowance; the per-target table names it.",
+      "description": "Remaining share of the 1% availability error budget for the least reliable active endpoint, using available samples in the 30-day lookback. New or recreated probe series may have less than 30 days of data, so this value may reflect a shorter period. Red means the observed availability has exhausted its allowance; the per-target table names the endpoint.",
       "id": 10,
       "title": "Error budget remaining (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -92,7 +92,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "clamp_min(1 - ((1 - min(avg_over_time(probe_success{job=\"blackbox\"}[30d]) and on(instance) probe_success{job=\"blackbox\"})) / 0.010000000000000009), 0) * 100",
+          "expr": "clamp_min(1 - ((1 - min((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\"}[30d]))) and on(instance) min by (instance) (probe_success{job=\"blackbox\"}))) / 0.010000000000000009), 0) * 100",
           "instant": true,
           "refId": "A"
         }
@@ -117,7 +117,7 @@
     },
     {
       "type": "stat",
-      "description": "Average uptime across all monitored targets over the last 30 days, measured from probe_success. Green at or above the 99% objective, yellow down to 95%, red below.",
+      "description": "Average uptime across active targets using available samples in the 30-day lookback. New or recreated probe series may have less than 30 days of data, so this value may reflect a shorter period. Green at or above the 99% objective, yellow down to 95%, red below.",
       "id": 11,
       "title": "Availability (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -137,7 +137,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[30d]) and on(instance) probe_success{job=\"blackbox\"}) * 100",
+          "expr": "avg((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\"}[30d]))) and on(instance) min by (instance) (probe_success{job=\"blackbox\"})) * 100",
           "instant": true,
           "refId": "A"
         }
@@ -160,9 +160,9 @@
     },
     {
       "type": "stat",
-      "description": "Uptime of the least reliable target over 30 days. This is the number to watch when fleet averages look healthy; the Targets table at the bottom names the offender.",
+      "description": "Count of active targets whose available samples in the 30-day lookback average below the 99% availability objective. New or recreated probe series may have less than 30 days of data, so the count reflects only available history; the table lists each miss. Zero means no active target is below objective in its available data.",
       "id": 12,
-      "title": "Worst target (30d)",
+      "title": "SLO misses (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
       "options": {
@@ -180,23 +180,22 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "min(avg_over_time(probe_success{job=\"blackbox\"}[30d]) and on(instance) probe_success{job=\"blackbox\"}) * 100",
+          "expr": "count((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\"})) or vector(0)",
           "instant": true,
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "decimals": 2,
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red", "value": null },
-              { "color": "yellow", "value": 95 },
-              { "color": "green", "value": 99 }
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
             ]
           },
-          "unit": "percent"
+          "unit": "short"
         },
         "overrides": []
       }
@@ -339,7 +338,7 @@
     },
     {
       "type": "timeseries",
-      "description": "Fleet probe success over short (5m) and sustained (1h) windows. The dashed line is the 99% objective; short dips show active incidents, while the 1h line shows sustained impact.",
+      "description": "Five-minute and one-hour rolling availability for the selected target set. A target link selects one endpoint and a 30-day dashboard range; the chart shows only periods with stored probe samples. Use the 99% line to identify observed failure windows. New or recreated targets may have less than 30 days of history.",
       "id": 15,
       "title": "Availability vs objective",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -355,14 +354,14 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[5m]))",
-          "legendFormat": "fleet (5m)",
+          "expr": "avg(avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[5m])))",
+          "legendFormat": "selected targets (5m)",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[1h]))",
-          "legendFormat": "fleet (1h)",
+          "expr": "avg(avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[1h])))",
+          "legendFormat": "selected targets (1h)",
           "refId": "B"
         }
       ],
@@ -399,47 +398,171 @@
     },
     {
       "type": "table",
-      "description": "Thirty-day availability per endpoint, lowest first. Investigate any target below the 99% objective; use the target selector to focus the table.",
+      "description": "Only active targets whose available probe samples in the 30-day lookback average below the 99% objective. Target is a short service/host label; the Links actions use the full instance URL. New or recreated targets may have less than 30 days of history; availability and projected unavailable hours then reflect only available samples, with downtime extrapolated to 720 hours. DOWN means investigate now; UP means review the linked target-filtered history. Zero misses and no rows mean no active target is below objective in available data.",
       "id": 32,
-      "title": "Per-target availability (30d, worst first)",
+      "title": "Targets below 99% (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 9, "w": 24, "x": 0, "y": 22 },
       "options": {
         "cellHeight": "sm",
         "footer": { "show": false },
         "showHeader": true,
-        "sortBy": [{ "desc": false, "displayName": "Availability" }]
+        "sortBy": [{ "desc": false, "displayName": "30d availability" }]
       },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d]) * 100 and on(instance) probe_success{job=\"blackbox\", instance=~\"$target\"}",
+          "expr": "label_replace((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}), \"target\", \"$1\", \"instance\", \"https?://(([[][^]]+[]])|([0-9]{1,3}([.][0-9]{1,3}){3})|([^/:.]+)).*\")",
+          "format": "table",
           "instant": true,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{target}}",
           "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "min by (instance) (probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}) and on(instance) (avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[30d])) * 100 \u003c 99)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "current state",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(1 - avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[30d]))) * 720 and on(instance) ((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "estimated unavailable hours",
+          "refId": "C"
         }
       ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": { "align": "auto", "cellOptions": { "type": "auto" } },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
       "transformations": [
+        {
+          "id": "joinByField",
+          "options": { "byField": "instance", "mode": "outerTabular" }
+        },
         {
           "id": "organize",
           "options": {
             "excludeByName": {
               "__name__": true,
               "Time": true,
+              "Time #A": true,
+              "Time #B": true,
+              "Time #C": true,
               "job": true,
               "prometheus": true
             },
-            "renameByName": { "Value": "Availability", "instance": "Target" }
+            "indexByName": {
+              "Value #A": 2,
+              "Value #B": 1,
+              "Value #C": 3,
+              "instance": 4,
+              "target": 0
+            },
+            "renameByName": {
+              "Value #A": "30d availability",
+              "Value #B": "Current",
+              "Value #C": "Estimated unavailable (h)",
+              "instance": "Links",
+              "target": "Target"
+            }
           }
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Target" },
+            "properties": [{ "id": "custom.width", "value": 180 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Current" },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": { "color": "red", "index": 0, "text": "DOWN" },
+                      "1": { "color": "green", "index": 1, "text": "UP" }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background-solid" }
+              },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "30d availability" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "decimals", "value": 2 },
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 100 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "green", "value": 99 }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              { "id": "custom.width", "value": 260 }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Estimated unavailable (h)"
+            },
+            "properties": [
+              { "id": "unit", "value": "h" },
+              { "id": "decimals", "value": 1 },
+              { "id": "custom.width", "value": 190 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Links" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "data-links" } },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "url": "/d/blackbox/blackbox?var-target=${__value.raw:percentencode}\u0026from=now-30d\u0026to=now",
+                    "targetBlank": false,
+                    "title": "View trend"
+                  },
+                  {
+                    "url": "${__value.raw}",
+                    "targetBlank": true,
+                    "title": "Open endpoint"
+                  }
+                ]
+              },
+              { "id": "custom.width", "value": 200 }
+            ]
+          }
+        ]
+      }
     },
     {
       "type": "timeseries",
