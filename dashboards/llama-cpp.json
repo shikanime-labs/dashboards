@@ -62,11 +62,11 @@
       "includeVars": false,
       "keepTime": false,
       "tags": [],
-      "targetBlank": false,
+      "targetBlank": true,
       "title": "Dashboard source",
-      "tooltip": "Dashboard source",
+      "tooltip": "View the dashboard JSON source on GitHub",
       "type": "link",
-      "url": "https://github.com/pecastro/grafana-dashboards/blob/main/prometheus/llamacpp-monitoring.json"
+      "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/llama-cpp.json"
     }
   ],
   "panels": [
@@ -2028,6 +2028,7 @@
       "type": "timeseries"
     }
   ],
+  "liveNow": false,
   "preload": false,
   "refresh": "1m",
   "schemaVersion": 42,
