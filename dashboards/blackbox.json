@@ -75,7 +75,7 @@
   "panels": [
     {
       "type": "gauge",
-      "description": "How much of the 30-day error budget is left. The SLO allows 1% downtime per month (99% objective, enforced by the SLOAvailabilityPage and SLOBurnRateFast alerts); the gauge shows the unspent share of that allowance. Red means the budget is gone and further failures breach the SLO.",
+      "description": "Remaining share of the 1% availability error budget for the least reliable active endpoint over 30 days. Red means that endpoint has exhausted its allowance; the per-target table names it.",
       "id": 10,
       "title": "Error budget remaining (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -92,7 +92,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "clamp_min(1 - ((1 - avg(avg_over_time(probe_success{job=\"blackbox\"}[30d]))) / 0.010000000000000009), 0) * 100",
+          "expr": "clamp_min(1 - ((1 - min(avg_over_time(probe_success{job=\"blackbox\"}[30d]) and on(instance) probe_success{job=\"blackbox\"})) / 0.010000000000000009), 0) * 100",
           "instant": true,
           "refId": "A"
         }
