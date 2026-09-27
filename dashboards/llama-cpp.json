@@ -88,7 +88,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:requests_processing gauge",
+      "description": "Requests the llama.cpp server is processing right now.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -151,7 +151,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:requests_deferred gauge",
+      "description": "Requests waiting in the queue because every slot is busy. A growing value means demand exceeds capacity \u2014 add a replica or reduce context length.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -222,7 +222,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:prompt_tokens_seconds gauge",
+      "description": "Prompt processing speed in tokens per second across the fleet, shown only while requests are running.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -286,7 +286,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:predicted_tokens_seconds gauge",
+      "description": "Text generation speed in tokens per second across the fleet, shown only while requests are running.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -350,7 +350,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:n_busy_slots_per_decode gauge",
+      "description": "Average share of slots busy per decode. Near 1.0 means the server is saturated and new requests will queue.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -413,7 +413,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:n_tokens_max gauge",
+      "description": "Largest context length currently loaded across servers \u2014 useful to confirm a preset change took effect.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -490,7 +490,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Prompt throughput over time",
+      "description": "Prompt processing speed per server over time. Flat at zero means idle, not broken.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -590,7 +590,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Generation throughput over time",
+      "description": "Generation speed per server over time. The number users experience as response fluency.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -690,7 +690,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Per-token latency from rate-based derivation",
+      "description": "Average milliseconds per token. Rising values under constant load mean slower responses \u2014 check memory pressure or thermal throttling on the node.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -776,7 +776,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "1000 * sum(rate(llamacpp:prompt_seconds_total[$__rate_interval])) / sum(rate(llamacpp:prompt_tokens_total[$__rate_interval]))",
+          "expr": "1000 * sum(rate(llamacpp:prompt_seconds_total[$__rate_interval])) / sum(clamp_min(rate(llamacpp:prompt_tokens_total[$__rate_interval]), 1e-9))",
           "legendFormat": "Prompt",
           "range": true,
           "refId": "A"
@@ -787,7 +787,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "1000 * rate(llamacpp:tokens_predicted_seconds_total[$__rate_interval]) / rate(llamacpp:tokens_predicted_total[$__rate_interval])",
+          "expr": "1000 * rate(llamacpp:tokens_predicted_seconds_total[$__rate_interval]) / clamp_min(rate(llamacpp:tokens_predicted_total[$__rate_interval]), 1e-9)",
           "legendFormat": "Generation",
           "range": true,
           "refId": "B"
@@ -814,7 +814,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:requests_processing gauge",
+      "description": "Requests the llama.cpp server is processing right now.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -913,7 +913,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:requests_deferred gauge",
+      "description": "Requests waiting in the queue because every slot is busy. A growing value means demand exceeds capacity \u2014 add a replica or reduce context length.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1020,7 +1020,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:n_busy_slots_per_decode gauge",
+      "description": "Average share of slots busy per decode. Near 1.0 means the server is saturated and new requests will queue.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1140,7 +1140,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "rate(llamacpp:tokens_predicted_total[interval]) / rate(llamacpp:n_decode_total[interval])",
+      "description": "Average tokens produced per decode call. Low values under load are normal \u2014 batching splits a decode across many requests.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1225,7 +1225,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "rate(llamacpp:tokens_predicted_total[$__rate_interval]) / rate(llamacpp:n_decode_total[$__rate_interval])",
+          "expr": "clamp_min(rate(llamacpp:tokens_predicted_total[$__rate_interval]), 1e-9) / clamp_min(rate(llamacpp:n_decode_total[$__rate_interval]), 1e-9)",
           "legendFormat": "Tokens per decode",
           "range": true,
           "refId": "A"
@@ -1239,7 +1239,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "rate(llamacpp:n_decode_total[interval])",
+      "description": "Decode calls per second \u2014 how often the server runs a decoding step.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1339,7 +1339,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "1000 * rate(llamacpp:prompt_seconds_total[interval]) / rate(llamacpp:prompt_tokens_total[interval])",
+      "description": "Milliseconds per input (prompt) token. Prompt processing is compute-bound; expect lower values on nodes with faster memory bandwidth.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1425,7 +1425,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "1000 * sum(rate(llamacpp:prompt_seconds_total[$__rate_interval])) / sum(rate(llamacpp:prompt_tokens_total[$__rate_interval]))",
+          "expr": "1000 * sum(rate(llamacpp:prompt_seconds_total[$__rate_interval])) / sum(clamp_min(rate(llamacpp:prompt_tokens_total[$__rate_interval]), 1e-9))",
           "legendFormat": "Prompt latency/token",
           "range": true,
           "refId": "A"
@@ -1439,7 +1439,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "1000 * rate(llamacpp:tokens_predicted_seconds_total[interval]) / rate(llamacpp:tokens_predicted_total[interval])",
+      "description": "Milliseconds per output (generated) token. This dominates perceived chat latency.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1525,7 +1525,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "1000 * rate(llamacpp:tokens_predicted_seconds_total[$__rate_interval]) / rate(llamacpp:tokens_predicted_total[$__rate_interval])",
+          "expr": "1000 * rate(llamacpp:tokens_predicted_seconds_total[$__rate_interval]) / clamp_min(rate(llamacpp:tokens_predicted_total[$__rate_interval]), 1e-9)",
           "legendFormat": "Generation latency/token",
           "range": true,
           "refId": "A"
@@ -1552,7 +1552,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:prompt_tokens_total counter",
+      "description": "Cumulative prompt tokens processed per server. Read the rate, not the absolute value.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1648,7 +1648,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:tokens_predicted_total counter",
+      "description": "Cumulative generated tokens per server.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1744,7 +1744,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:prompt_seconds_total counter",
+      "description": "Cumulative seconds spent processing prompts per server.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1840,7 +1840,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:tokens_predicted_seconds_total counter",
+      "description": "Cumulative seconds spent generating tokens per server.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1936,7 +1936,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "llamacpp:n_decode_total counter",
+      "description": "Cumulative decode calls per server \u2014 the denominator for Tokens per Decode.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2069,5 +2069,5 @@
   "version": 2,
   "weekStart": "",
   "gnetId": 25591,
-  "description": "llama.cpp LLM server metrics"
+  "description": "Throughput, latency and slot usage of the llama.cpp inference fleet, from the llamacpp recorded rules."
 }

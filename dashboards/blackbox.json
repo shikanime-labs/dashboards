@@ -67,7 +67,7 @@
     },
     {
       "type": "gauge",
-      "description": "Share of the 1% monthly error budget still unspent, fleet-wide. The objective is 99%, matching the SLOAvailabilityPage and SLOBurnRateFast rules.",
+      "description": "How much of the 30-day error budget is left. The SLO allows 1% downtime per month (99% objective, enforced by the SLOAvailabilityPage and SLOBurnRateFast alerts); the gauge shows the unspent share of that allowance. Red means the budget is gone and further failures breach the SLO.",
       "id": 10,
       "title": "Error budget remaining (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -109,7 +109,7 @@
     },
     {
       "type": "stat",
-      "description": "Fleet-wide probe success over the 30d objective window.",
+      "description": "Average uptime across all monitored targets over the last 30 days, measured from probe_success. Green at or above the 99% objective, yellow down to 95%, red below.",
       "id": 11,
       "title": "Availability (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -152,7 +152,7 @@
     },
     {
       "type": "stat",
-      "description": "Lowest per-target availability in the window. The Targets table names the offender.",
+      "description": "Uptime of the least reliable target over 30 days. This is the number to watch when fleet averages look healthy; the Targets table at the bottom names the offender.",
       "id": 12,
       "title": "Worst target (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -195,7 +195,7 @@
     },
     {
       "type": "stat",
-      "description": "Matches the SLOLatencyHigh rule: mean probe duration above 1s breaches the objective.",
+      "description": "Average probe duration right now, smoothed over 10 minutes. The SLOLatencyHigh alert pages when this exceeds 1 second; yellow starts at 0.5.",
       "id": 13,
       "title": "Latency objective",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -238,7 +238,7 @@
     },
     {
       "type": "timeseries",
-      "description": "Fleet error budget consumed per unit of time. Each series carries the page threshold its own window uses: 14.4 for 1h, 6 for 6h.",
+      "description": "How fast the error budget is being spent, where 1.0 is exactly sustainable. The fast (1h) line pages at 14.4, the slow (6h) line at 6 — both drawn dashed. Above a threshold means a sustained outage is burning budget fast enough to breach the SLO within days.",
       "id": 14,
       "title": "Burn rate",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -331,7 +331,7 @@
     },
     {
       "type": "timeseries",
-      "description": "The recorded rule blackbox:availability_ir aggregates the same probe_success the alerts evaluate. The dashed line is the 99% objective.",
+      "description": "Fleet uptime over 5-minute and 1-hour windows against the dashed 99% objective. The recorded series (blackbox:availability_ir) is the same input the alert rules evaluate, so dips here predict pages.",
       "id": 15,
       "title": "Availability vs objective",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -405,7 +405,7 @@
     },
     {
       "type": "stat",
-      "description": "Targets whose last probe succeeded. Compare against Targets below.",
+      "description": "Targets whose last probe succeeded. Read together with Targets configured to spot silent gaps.",
       "id": 20,
       "title": "Probes up",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -486,7 +486,7 @@
     },
     {
       "type": "stat",
-      "description": "Denominator for the two counts above, read from the metric rather than a hardcoded total.",
+      "description": "Total monitored targets, counted from live series rather than a hardcoded number, so a vanished probe config shows up here first.",
       "id": 22,
       "title": "Targets configured",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -515,7 +515,7 @@
     },
     {
       "type": "stat",
-      "description": "Earliest expiry across every probed certificate.",
+      "description": "Fewest days remaining on any probed certificate. Under 14 days means renewal is due; under 30 start watching. The TLS section names the certificate.",
       "id": 23,
       "title": "Min certificate expiry",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -600,7 +600,7 @@
     },
     {
       "type": "stat",
-      "description": "One series per vmagent replica. Zero means the probe results themselves are missing, not that the endpoints are up.",
+      "description": "Scraper replicas currently delivering probe samples. Zero here means monitoring itself is blind — targets may be fine but nothing would notice. One series per vmagent replica.",
       "id": 25,
       "title": "Scrape samples",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -637,7 +637,7 @@
     },
     {
       "type": "state-timeline",
-      "description": "Per-target up/down over time. Gaps are real probe outages; red bands are failing probes. Replaces two line charts: binary states are unreadable as lines once more than a handful of targets exist.",
+      "description": "One bar per target over time. Red bands are failing probes, gaps are missing data, and an all-green panel is the healthy state. The Probes down stat above carries the current count.",
       "id": 31,
       "title": "Probe state by target",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -686,7 +686,7 @@
     },
     {
       "type": "table",
-      "description": "Sorted ascending so the weakest target is on the first row.",
+      "description": "Every target ranked by 30-day uptime, least reliable on the first row. This is where Worst target (30d) above gets its number.",
       "id": 32,
       "title": "Per-target availability (30d, worst first)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -738,7 +738,7 @@
     },
     {
       "type": "piechart",
-      "description": "Share of targets by last observed response class. A 5xx slice is a backend problem; 'no response' is a network or certificate problem.",
+      "description": "How targets answered their last probe, grouped by response class. 5xx points at the backend, 4xx at routing or auth, and 'no response' at network, DNS or certificate failure.",
       "id": 70,
       "title": "HTTP status distribution",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -801,7 +801,7 @@
     },
     {
       "type": "barchart",
-      "description": "Last observed status code per target. Codes 400 and above, and missing probes, render red; anything 2xx/3xx renders green.",
+      "description": "Last HTTP status code per target. Green is 2xx/3xx, red is 400 or above and also covers missing probes — a target that stopped answering shows red here too.",
       "id": 71,
       "title": "Status code by target (now)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -906,7 +906,7 @@
     },
     {
       "type": "timeseries",
-      "description": "Percentiles across targets, so one slow endpoint is visible without a 40-entry legend.",
+      "description": "Probe duration percentiles across all targets: p50 typical, p95 slow, p99 worst. A widening spread means a specific target is dragging while the fleet stays healthy; Slowest targets identifies it.",
       "id": 41,
       "title": "Fleet probe duration spread",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -960,7 +960,7 @@
     },
     {
       "type": "timeseries",
-      "description": "Stacked because the phases sum to the request time. Slow tls points at the certificate chain, slow processing at the backend.",
+      "description": "Probe time split into its stages — DNS resolve, TCP connect, TLS handshake, server processing, body transfer — stacked because they sum to the total. Slow tls points at the certificate chain, slow processing at the backend, slow resolve at DNS.",
       "id": 42,
       "title": "Probe duration by phase",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -1034,7 +1034,7 @@
     },
     {
       "type": "timeseries",
-      "description": "Days remaining. The dashed line sits at the renewal threshold.",
+      "description": "Days until each certificate expires, per target, over time. The dashed line marks the 14-day renewal threshold; the sawtooth pattern comes from renewals resetting the clock.",
       "id": 50,
       "title": "Certificate expiry",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -1086,7 +1086,7 @@
     },
     {
       "type": "barchart",
-      "description": "Days until the earliest certificate expiry, one bar per target, sorted so the next renewal is on the left. The timeseries next to it shows how headroom evolves; this shows who to act on today.",
+      "description": "Days left on each certificate right now, soonest expiry first, colored red under 14 days and yellow under 30. The trend beside it shows how headroom evolves; this one says who to renew today.",
       "id": 52,
       "title": "Certificate headroom by target (now)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -1143,7 +1143,7 @@
     },
     {
       "type": "timeseries",
-      "description": "Resolution latency, where a tailnet split-DNS regression would surface first.",
+      "description": "DNS resolution time: the p95 across targets plus the five slowest individual targets. This is where a tailnet split-DNS change or resolver regression surfaces first.",
       "id": 51,
       "title": "DNS lookup time",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -1199,7 +1199,7 @@
     },
     {
       "type": "table",
-      "description": "One row per target: reachability, status code, probe duration and certificate headroom, joined on the target URL.",
+      "description": "One row per target: reachability, HTTP status, probe duration and certificate days left. Red cells need attention — down target, error status, slow probe or an expiring certificate.",
       "id": 60,
       "title": "Target detail",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
