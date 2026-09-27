@@ -1,14 +1,30 @@
 {
   "version": 1,
+  "preload": false,
+  "timepicker": {},
   "editable": true,
-  "graphTooltip": 1,
   "refresh": "1m",
-  "schemaVersion": 42,
-  "timezone": "utc",
-  "title": "Blackbox",
+  "graphTooltip": 1,
+  "weekStart": "",
+  "liveNow": false,
   "uid": "blackbox",
-  "tags": ["blackbox", "prometheus", "uptime", "slo", "shikanime"],
+  "description": "Synthetic HTTP probes of the fleet endpoints: availability against the 99% SLO, latency, TLS certificate headroom and per-target status.",
+  "schemaVersion": 42,
+  "fiscalYearStartMonth": 0,
+  "title": "Blackbox",
+  "timezone": "utc",
   "time": { "from": "now-24h", "to": "now" },
+  "tags": ["blackbox", "prometheus", "uptime", "slo", "shikanime"],
+  "links": [
+    {
+      "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/blackbox.json",
+      "allowInsecure": false,
+      "isNewTab": true,
+      "title": "Dashboard source",
+      "tooltip": "View the dashboard JSON source on GitHub",
+      "type": "link"
+    }
+  ],
   "annotations": {
     "list": [
       {
