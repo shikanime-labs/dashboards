@@ -399,7 +399,7 @@
     },
     {
       "type": "table",
-      "description": "Thirty-day availability per endpoint, lowest first. Investigate any target below the 99% objective; this table names the endpoints behind the fleet SLO.",
+      "description": "Thirty-day availability per endpoint, lowest first. Investigate any target below the 99% objective; use the target selector to focus the table.",
       "id": 32,
       "title": "Per-target availability (30d, worst first)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -413,7 +413,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "avg_over_time(probe_success{job=\"blackbox\"}[30d]) * 100 and on(instance) probe_success{job=\"blackbox\"}",
+          "expr": "avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d]) * 100 and on(instance) probe_success{job=\"blackbox\", instance=~\"$target\"}",
           "instant": true,
           "legendFormat": "{{instance}}",
           "refId": "A"
