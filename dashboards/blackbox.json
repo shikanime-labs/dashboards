@@ -500,35 +500,7 @@
         "overrides": []
       }
     },
-    {
-      "type": "stat",
-      "description": "Total monitored targets, counted from live series rather than a hardcoded number, so a vanished probe config shows up here first.",
-      "id": 22,
-      "title": "Targets configured",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 14 },
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "options": {
-        "colorMode": "none",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "count(probe_success{job=\"blackbox\"}) or vector(0)",
-          "instant": true,
-          "refId": "A"
-        }
-      ]
-    },
+    
     {
       "type": "stat",
       "description": "Fewest days remaining on any probed certificate. Under 14 days means renewal is due; under 30 start watching. The TLS section names the certificate.",
@@ -572,77 +544,8 @@
         "overrides": []
       }
     },
-    {
-      "type": "stat",
-      "id": 24,
-      "title": "Median probe duration",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 14 },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "quantile(0.5, probe_duration_seconds{job=\"blackbox\"})",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 3,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 0.5 },
-              { "color": "red", "value": 1 }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      }
-    },
-    {
-      "type": "stat",
-      "description": "Scraper replicas currently delivering probe samples. Zero here means monitoring itself is blind — targets may be fine but nothing would notice. One series per vmagent replica.",
-      "id": 25,
-      "title": "Scrape samples",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 14 },
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "options": {
-        "colorMode": "none",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "count(up{job=\"blackbox\"} == 1) or vector(0)",
-          "instant": true,
-          "refId": "A"
-        }
-      ]
-    },
+    
+    
     {
       "type": "row",
       "collapsed": false,
@@ -744,133 +647,9 @@
         }
       ]
     },
-    {
-      "type": "row",
-      "collapsed": false,
-      "id": 106,
-      "panels": [],
-      "title": "HTTP responses",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 36 }
-    },
-    {
-      "type": "piechart",
-      "description": "How targets answered their last probe, grouped by response class. 5xx points at the backend, 4xx at routing or auth, and 'no response' at network, DNS or certificate failure.",
-      "id": 70,
-      "title": "HTTP status distribution",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 37 },
-      "options": {
-        "displayLabels": ["name", "percent"],
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "right",
-          "showValue": true
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": true
-        },
-        "tooltip": { "mode": "single", "sort": "none" }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "count(probe_http_status_code{job=\"blackbox\", instance=~\"$target\"} \u003e 0 and probe_http_status_code{job=\"blackbox\", instance=~\"$target\"} \u003c 400) or vector(0)",
-          "instant": true,
-          "legendFormat": "2xx/3xx",
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "count(probe_http_status_code{job=\"blackbox\", instance=~\"$target\"} \u003e= 400 and probe_http_status_code{job=\"blackbox\", instance=~\"$target\"} \u003c 500) or vector(0)",
-          "instant": true,
-          "legendFormat": "4xx",
-          "refId": "B"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "count(probe_http_status_code{job=\"blackbox\", instance=~\"$target\"} \u003e= 500) or vector(0)",
-          "instant": true,
-          "legendFormat": "5xx",
-          "refId": "C"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "count(probe_success{job=\"blackbox\", instance=~\"$target\"} == 0) or vector(0)",
-          "instant": true,
-          "legendFormat": "no response",
-          "refId": "D"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false }
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      }
-    },
-    {
-      "type": "barchart",
-      "description": "Last HTTP status code per target. Green is 2xx/3xx, red is 400 or above and also covers missing probes — a target that stopped answering shows red here too.",
-      "id": 71,
-      "title": "Status code by target (now)",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 37 },
-      "options": {
-        "barWidth": 0.8,
-        "groupWidth": 0.7,
-        "legend": { "calcs": [], "displayMode": "hide", "placement": "bottom" },
-        "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": { "mode": "single", "sort": "none" },
-        "xTickLabelRotation": 45,
-        "xTickLabelSpacing": 0
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "probe_http_status_code{job=\"blackbox\", instance=~\"$target\"}",
-          "instant": true,
-          "legendFormat": "{{instance}}",
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "lineWidth": 1,
-            "scaleDistribution": { "type": "linear" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "decimals": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "red", "value": null },
-              { "color": "green", "value": 200 },
-              { "color": "red", "value": 400 }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      }
-    },
+    
+    
+    
     {
       "type": "row",
       "collapsed": false,
@@ -879,47 +658,7 @@
       "title": "Latency",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 45 }
     },
-    {
-      "type": "timeseries",
-      "id": 40,
-      "title": "Slowest targets",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 46 },
-      "options": {
-        "legend": {
-          "calcs": ["mean", "max", "lastNotNull"],
-          "displayMode": "table",
-          "placement": "right"
-        },
-        "tooltip": { "mode": "multi", "sort": "desc" }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "topk(5, probe_duration_seconds{job=\"blackbox\"})",
-          "legendFormat": "{{instance}}",
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 8,
-            "gradientMode": "none",
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      }
-    },
+    
     {
       "type": "timeseries",
       "description": "Probe duration percentiles across all targets: p50 typical, p95 slow, p99 worst. A widening spread means a specific target is dragging while the fleet stays healthy; Slowest targets identifies it.",
@@ -1100,63 +839,7 @@
         "overrides": []
       }
     },
-    {
-      "type": "barchart",
-      "description": "Days left on each certificate right now, soonest expiry first, colored red under 14 days and yellow under 30. The trend beside it shows how headroom evolves; this one says who to renew today.",
-      "id": 52,
-      "title": "Certificate headroom by target (now)",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 63 },
-      "options": {
-        "barWidth": 0.8,
-        "groupWidth": 0.7,
-        "legend": { "calcs": [], "displayMode": "hide", "placement": "bottom" },
-        "orientation": "horizontal",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": { "mode": "single", "sort": "none" },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "bottomk(40, (probe_ssl_earliest_cert_expiry{job=\"blackbox\", instance=~\"$target\"} - time()) / 86400)",
-          "instant": true,
-          "legendFormat": "{{instance}}",
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "lineWidth": 1,
-            "scaleDistribution": { "type": "linear" },
-            "thresholdsStyle": { "mode": "line" }
-          },
-          "decimals": 1,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "red", "value": null },
-              { "color": "yellow", "value": 14 },
-              { "color": "green", "value": 30 }
-            ]
-          },
-          "unit": "d"
-        },
-        "overrides": []
-      }
-    },
+    
     {
       "type": "timeseries",
       "description": "DNS resolution time: the p95 across targets plus the five slowest individual targets. This is where a tailnet split-DNS change or resolver regression surfaces first.",
