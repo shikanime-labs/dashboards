@@ -129,7 +129,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100",
+          "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[30d]) and on(instance) probe_success{job=\"blackbox\"}) * 100",
           "instant": true,
           "refId": "A"
         }
@@ -172,7 +172,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "min(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100",
+          "expr": "min(avg_over_time(probe_success{job=\"blackbox\"}[30d]) and on(instance) probe_success{job=\"blackbox\"}) * 100",
           "instant": true,
           "refId": "A"
         }
@@ -700,7 +700,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "bottomk(40, avg_over_time(probe_success{job=\"blackbox\"}[30d]) * 100)",
+          "expr": "avg_over_time(probe_success{job=\"blackbox\"}[30d]) * 100 and on(instance) probe_success{job=\"blackbox\"}",
           "instant": true,
           "legendFormat": "{{instance}}",
           "refId": "A"
