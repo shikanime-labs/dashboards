@@ -1,630 +1,1190 @@
 {
-  "title": "Blackbox",
-  "uid": "blackbox",
-  "tags": [
-    "blackbox",
-    "prometheus",
-    "uptime",
-    "shikanime"
-  ],
-  "timezone": "utc",
+  "version": 1,
   "editable": true,
   "graphTooltip": 1,
   "refresh": "1m",
   "schemaVersion": 42,
-  "version": 1,
-  "time": {
-    "from": "now-24h",
-    "to": "now"
+  "timezone": "utc",
+  "title": "Blackbox",
+  "uid": "blackbox",
+  "tags": ["blackbox", "prometheus", "uptime", "slo", "shikanime"],
+  "time": { "from": "now-24h", "to": "now" },
+  "annotations": {
+    "list": [
+      {
+        "name": "Annotations \u0026 Alerts",
+        "type": "dashboard",
+        "builtIn": 1,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" }
+      }
+    ]
   },
   "templating": {
     "list": [
       {
         "name": "datasource",
-        "label": "Datasource",
         "type": "datasource",
-        "query": "prometheus",
-        "current": {
-          "text": "VictoriaMetrics",
-          "value": "VictoriaMetrics",
-          "selected": true
-        },
         "hide": 2,
-        "refresh": 1,
         "includeAll": false,
-        "options": []
+        "label": "Datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "current": {
+          "selected": true,
+          "text": "VictoriaMetrics",
+          "value": "VictoriaMetrics"
+        }
+      },
+      {
+        "name": "target",
+        "type": "query",
+        "allValue": ".*",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Target",
+        "multi": true,
+        "options": [],
+        "query": "label_values(probe_success{job=\"blackbox\"}, instance)",
+        "refresh": 1,
+        "sort": 1,
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
       }
     ]
   },
   "panels": [
     {
-      "id": 100,
       "type": "row",
-      "title": "Summary",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
       "collapsed": false,
-      "panels": []
+      "id": 100,
+      "panels": [],
+      "title": "SLO",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
     {
-      "id": 1,
-      "type": "stat",
-      "title": "Probes up",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 1
+      "type": "gauge",
+      "description": "Share of the 1% monthly error budget still unspent, fleet-wide. The objective is 99%, matching the SLOAvailabilityPage and SLOBurnRateFast rules.",
+      "id": 10,
+      "title": "Error budget remaining (30d)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "count(probe_success{job=\"blackbox\"} == 1) or vector(0)",
-          "refId": "A",
-          "instant": true
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "clamp_min(1 - ((1 - avg(avg_over_time(probe_success{job=\"blackbox\"}[30d]))) / 0.010000000000000009), 0) * 100",
+          "instant": true,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
+          "decimals": 1,
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 38
-              }
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 25 },
+              { "color": "green", "value": 50 }
             ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
-        "colorMode": "value",
-        "graphMode": "area",
-        "textMode": "auto"
-      }
-    },
-    {
-      "id": 2,
-      "type": "stat",
-      "title": "Probes down",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 1
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
           },
-          "expr": "count(probe_success{job=\"blackbox\"} == 0) or vector(0)",
-          "refId": "A",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
+          "unit": "percent"
         },
         "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
-        "colorMode": "value",
-        "graphMode": "area",
-        "textMode": "auto"
       }
     },
     {
-      "id": 3,
       "type": "stat",
+      "description": "Fleet-wide probe success over the 30d objective window.",
+      "id": 11,
       "title": "Availability (30d)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 1
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100",
-          "refId": "A",
-          "instant": true
+          "instant": true,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
           "decimals": 2,
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 95
-              },
-              {
-                "color": "green",
-                "value": 99
-              }
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
             ]
-          }
+          },
+          "unit": "percent"
         },
         "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
-        "colorMode": "value",
-        "graphMode": "area",
-        "textMode": "auto"
       }
     },
     {
-      "id": 4,
       "type": "stat",
-      "title": "Average probe duration",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 1
+      "description": "Lowest per-target availability in the window. The Targets table names the offender.",
+      "id": 12,
+      "title": "Worst target (30d)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "avg(probe_duration_seconds{job=\"blackbox\"})",
-          "refId": "A",
-          "instant": true
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "min(avg_over_time(probe_success{job=\"blackbox\"}[30d])) * 100",
+          "instant": true,
+          "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 95 },
+              { "color": "green", "value": 99 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Matches the SLOLatencyHigh rule: mean probe duration above 1s breaches the objective.",
+      "id": 13,
+      "title": "Latency objective",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(avg_over_time(probe_duration_seconds{job=\"blackbox\"}[10m]))",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
           "decimals": 3,
           "thresholds": {
             "mode": "absolute",
             "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Fleet error budget consumed per unit of time. Each series carries the page threshold its own window uses: 14.4 for 1h, 6 for 6h.",
+      "id": 14,
+      "title": "Burn rate",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(1 - avg(avg_over_time(probe_success{job=\"blackbox\"}[1h]))) / 0.010000000000000009",
+          "legendFormat": "fast (1h)",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(1 - avg(avg_over_time(probe_success{job=\"blackbox\"}[6h]))) / 0.010000000000000009",
+          "legendFormat": "slow (6h)",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "fast (1h)" },
+            "properties": [
               {
-                "color": "green",
-                "value": null
+                "id": "thresholds",
+                "value": {
+                  "fillColor": "rgba(255, 0, 0, 0)",
+                  "fillOpacity": 0,
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "red", "value": 14.4 }
+                  ],
+                  "style": "dashed"
+                }
               },
               {
-                "color": "yellow",
-                "value": 0.5
+                "id": "custom.thresholdsStyle",
+                "value": { "lineWidth": 1, "mode": "dashed" }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "slow (6h)" },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "fillColor": "rgba(255, 0, 0, 0)",
+                  "fillOpacity": 0,
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 6 }
+                  ],
+                  "style": "dashed"
+                }
               },
               {
-                "color": "red",
-                "value": 1
+                "id": "custom.thresholdsStyle",
+                "value": { "lineWidth": 1, "mode": "dashed" }
               }
             ]
           }
+        ]
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "The recorded rule blackbox:availability_ir aggregates the same probe_success the alerts evaluate. The dashed line is the 99% objective.",
+      "id": 15,
+      "title": "Availability vs objective",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[5m]))",
+          "legendFormat": "fleet (5m)",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(avg_over_time(probe_success{job=\"blackbox\"}[1h]))",
+          "legendFormat": "fleet (1h)",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(blackbox:availability_ir)",
+          "legendFormat": "recorded (1h)",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "max": 1.001,
+          "min": 0.94,
+          "thresholds": {
+            "fillColor": "rgba(255, 0, 0, 0.1)",
+            "fillOpacity": 10,
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 0.99 }
+            ],
+            "style": "dashed"
+          },
+          "unit": "percentunit"
         },
         "overrides": []
-      },
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "id": 101,
+      "panels": [],
+      "title": "Summary",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 }
+    },
+    {
+      "type": "stat",
+      "description": "Targets whose last probe succeeded. Compare against Targets below.",
+      "id": 20,
+      "title": "Probes up",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 14 },
       "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
         "colorMode": "value",
         "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "count(probe_success{job=\"blackbox\"} == 1) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
       }
     },
     {
-      "id": 101,
+      "type": "stat",
+      "id": 21,
+      "title": "Probes down",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 14 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "count(probe_success{job=\"blackbox\"} == 0) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Denominator for the two counts above, read from the metric rather than a hardcoded total.",
+      "id": 22,
+      "title": "Targets configured",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 14 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": {
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "count(probe_success{job=\"blackbox\"}) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "description": "Earliest expiry across every probed certificate.",
+      "id": 23,
+      "title": "Min certificate expiry",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 14 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "min((probe_ssl_earliest_cert_expiry{job=\"blackbox\"} - time()) / 86400)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 14 },
+              { "color": "green", "value": 30 }
+            ]
+          },
+          "unit": "d"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "id": 24,
+      "title": "Median probe duration",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 14 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "quantile(0.5, probe_duration_seconds{job=\"blackbox\"})",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "One series per vmagent replica. Zero means the probe results themselves are missing, not that the endpoints are up.",
+      "id": 25,
+      "title": "Scrape samples",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 14 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": {
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "count(up{job=\"blackbox\"} == 1) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
       "type": "row",
-      "title": "Per endpoint",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 5
-      },
       "collapsed": false,
-      "panels": []
+      "id": 102,
+      "panels": [],
+      "title": "Availability",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 }
     },
     {
-      "id": 5,
       "type": "timeseries",
-      "title": "Probe success",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 6
+      "description": "A failing target plots at 1 so the line is visible rather than sitting on zero; only failing targets draw, so an empty panel is the healthy state. The Probes down summary stat carries the authoritative count.",
+      "id": 30,
+      "title": "Probes down by target",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "probe_success{job=\"blackbox\"}",
-          "refId": "A",
-          "legendFormat": "{{instance}}"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "count by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"} == 0)",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
           "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "linear",
             "barAlignment": 0,
-            "lineWidth": 1,
-            "fillOpacity": 10,
+            "drawStyle": "line",
+            "fillOpacity": 8,
             "gradientMode": "none",
-            "spanNulls": true,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
             "showPoints": "never",
-            "stacking": {
-              "group": "A",
-              "mode": "none"
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "color": "green", "index": 0, "text": "up" },
+                "1": { "color": "red", "index": 1, "text": "DOWN" }
+              }
             }
-          }
+          ],
+          "unit": "none"
         },
         "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
       }
     },
     {
-      "id": 6,
       "type": "timeseries",
-      "title": "HTTP status code",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 14
+      "description": "Gaps are real probe outages; the line deliberately breaks instead of interpolating across them.",
+      "id": 31,
+      "title": "Probe success by target",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "probe_http_status_code{job=\"blackbox\"}",
-          "refId": "A",
-          "legendFormat": "{{instance}}"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "probe_success{job=\"blackbox\", instance=~\"$target\"}",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
           "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "linear",
             "barAlignment": 0,
-            "lineWidth": 1,
-            "fillOpacity": 10,
+            "drawStyle": "line",
+            "fillOpacity": 8,
             "gradientMode": "none",
-            "spanNulls": true,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
             "showPoints": "never",
-            "stacking": {
-              "group": "A",
-              "mode": "none"
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "color": "red", "index": 0, "text": "DOWN" },
+                "1": { "color": "green", "index": 1, "text": "UP" }
+              }
             }
-          }
+          ],
+          "unit": "none"
         },
         "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
       }
     },
     {
-      "id": 7,
-      "type": "timeseries",
-      "title": "TLS certificate expiry",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 22
+      "type": "table",
+      "description": "Sorted ascending so the weakest target is on the first row.",
+      "id": 32,
+      "title": "Per-target availability (30d, worst first)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 27 },
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": [{ "desc": false, "displayName": "Availability" }]
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "(probe_ssl_earliest_cert_expiry{job=\"blackbox\"} - time()) / 86400",
-          "refId": "A",
-          "legendFormat": "{{instance}}"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "bottomk(40, avg_over_time(probe_success{job=\"blackbox\"}[30d]) * 100)",
+          "instant": true,
+          "legendFormat": "{{instance}}",
+          "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "d",
-          "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "linear",
-            "barAlignment": 0,
-            "lineWidth": 1,
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "spanNulls": true,
-            "showPoints": "never",
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            }
-          }
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" } },
+          "unit": "percent"
         },
         "overrides": []
       },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "__name__": true,
+              "Time": true,
+              "job": true,
+              "prometheus": true
+            },
+            "renameByName": { "Value": "Availability", "instance": "Target" }
+          }
         }
-      }
+      ]
     },
     {
-      "id": 8,
+      "type": "row",
+      "collapsed": false,
+      "id": 103,
+      "panels": [],
+      "title": "Latency",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 36 }
+    },
+    {
       "type": "timeseries",
-      "title": "DNS lookup time",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 30
+      "id": 40,
+      "title": "Slowest targets",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 37 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "probe_dns_lookup_time_seconds{job=\"blackbox\"}",
-          "refId": "A",
-          "legendFormat": "{{instance}}"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "topk(5, probe_duration_seconds{job=\"blackbox\"})",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
           "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "linear",
             "barAlignment": 0,
-            "lineWidth": 1,
-            "fillOpacity": 10,
+            "drawStyle": "line",
+            "fillOpacity": 8,
             "gradientMode": "none",
-            "spanNulls": true,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
             "showPoints": "never",
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            }
-          }
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "unit": "s"
         },
         "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ]
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
       }
     },
     {
-      "id": 9,
       "type": "timeseries",
+      "description": "Percentiles across targets, so one slow endpoint is visible without a 40-entry legend.",
+      "id": 41,
+      "title": "Fleet probe duration spread",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 37 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "quantile(0.5, probe_duration_seconds{job=\"blackbox\"})",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "quantile(0.95, probe_duration_seconds{job=\"blackbox\"})",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "quantile(0.99, probe_duration_seconds{job=\"blackbox\"})",
+          "legendFormat": "p99",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Stacked because the phases sum to the request time. Slow tls points at the certificate chain, slow processing at the backend.",
+      "id": 42,
       "title": "Probe duration by phase",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 38
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 45 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"resolve\"})",
-          "refId": "A",
-          "legendFormat": "resolve"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(probe_http_duration_seconds{job=\"blackbox\", phase=\"resolve\"})",
+          "legendFormat": "resolve",
+          "refId": "A"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"connect\"})",
-          "refId": "B",
-          "legendFormat": "connect"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(probe_http_duration_seconds{job=\"blackbox\", phase=\"connect\"})",
+          "legendFormat": "connect",
+          "refId": "B"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"tls\"})",
-          "refId": "C",
-          "legendFormat": "tls"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(probe_http_duration_seconds{job=\"blackbox\", phase=\"tls\"})",
+          "legendFormat": "tls",
+          "refId": "C"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"processing\"})",
-          "refId": "D",
-          "legendFormat": "processing"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(probe_http_duration_seconds{job=\"blackbox\", phase=\"processing\"})",
+          "legendFormat": "processing",
+          "refId": "D"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "avg by (phase) (probe_http_duration_seconds{job=\"blackbox\", phase=\"transfer\"})",
-          "refId": "E",
-          "legendFormat": "transfer"
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "avg(probe_http_duration_seconds{job=\"blackbox\", phase=\"transfer\"})",
+          "legendFormat": "transfer",
+          "refId": "E"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
           "custom": {
-            "drawStyle": "line",
-            "lineInterpolation": "linear",
             "barAlignment": 0,
-            "lineWidth": 1,
-            "fillOpacity": 10,
+            "drawStyle": "line",
+            "fillOpacity": 25,
             "gradientMode": "none",
-            "spanNulls": true,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
             "showPoints": "never",
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            }
-          }
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "normal" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "unit": "s"
         },
         "overrides": []
-      },
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "id": 104,
+      "panels": [],
+      "title": "TLS and DNS",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 }
+    },
+    {
+      "type": "timeseries",
+      "description": "Days remaining. The dashed line sits at the renewal threshold.",
+      "id": 50,
+      "title": "Certificate expiry",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 54 },
       "options": {
         "legend": {
+          "calcs": ["mean", "min", "lastNotNull"],
           "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "mean",
-            "max",
-            "lastNotNull"
-          ]
+          "placement": "right"
         },
-        "tooltip": {
-          "mode": "multi"
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(probe_ssl_earliest_cert_expiry{job=\"blackbox\", instance=~\"$target\"} - time()) / 86400",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
         }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "thresholds": {
+            "fillColor": "rgba(255, 0, 0, 0)",
+            "fillOpacity": 0,
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0 }
+            ],
+            "style": "dashed"
+          },
+          "unit": "d"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Resolution latency, where a tailnet split-DNS regression would surface first.",
+      "id": 51,
+      "title": "DNS lookup time",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 54 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "quantile(0.95, probe_dns_lookup_time_seconds{job=\"blackbox\"})",
+          "legendFormat": "p95",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "topk(5, probe_dns_lookup_time_seconds{job=\"blackbox\"})",
+          "legendFormat": "{{instance}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "id": 105,
+      "panels": [],
+      "title": "Targets",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 62 }
+    },
+    {
+      "type": "table",
+      "description": "One row per target: reachability, status code, probe duration and certificate headroom, joined on the target URL.",
+      "id": 60,
+      "title": "Target detail",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 63 },
+      "options": {
+        "cellHeight": "sm",
+        "footer": { "show": false },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "probe_success{job=\"blackbox\", instance=~\"$target\"}",
+          "instant": true,
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "probe_http_status_code{job=\"blackbox\", instance=~\"$target\"}",
+          "instant": true,
+          "legendFormat": "{{instance}}",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "probe_duration_seconds{job=\"blackbox\", instance=~\"$target\"}",
+          "instant": true,
+          "legendFormat": "{{instance}}",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(probe_ssl_earliest_cert_expiry{job=\"blackbox\", instance=~\"$target\"} - time()) / 86400",
+          "instant": true,
+          "legendFormat": "{{instance}}",
+          "refId": "D"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": { "byField": "instance", "mode": "outer" }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "__name__": true,
+              "Time": true,
+              "Value #B": false,
+              "job": true,
+              "prometheus": true
+            },
+            "renameByName": {
+              "Value #A": "Up",
+              "Value #B": "HTTP",
+              "Value #C": "Duration (s)",
+              "Value #D": "Cert (d)",
+              "instance": "Target"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" } }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Up" },
+            "properties": [
+              { "id": "unit", "value": "none" },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": { "color": "red", "index": 0, "text": "DOWN" },
+                      "1": { "color": "green", "index": 1, "text": "UP" }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background" }
+              },
+              { "id": "custom.align", "value": "center" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "HTTP" },
+            "properties": [
+              { "id": "unit", "value": "short" },
+              { "id": "decimals", "value": 0 },
+              { "id": "custom.align", "value": "center" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Duration (s)" },
+            "properties": [
+              { "id": "unit", "value": "s" },
+              { "id": "decimals", "value": 3 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Cert (d)" },
+            "properties": [
+              { "id": "unit", "value": "d" },
+              { "id": "decimals", "value": 1 }
+            ]
+          }
+        ]
       }
     }
   ]
