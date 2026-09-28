@@ -354,13 +354,13 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "avg(avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[5m])))",
+          "expr": "avg(avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[5m])))",
           "legendFormat": "selected targets (5m)",
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "avg(avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[1h])))",
+          "expr": "avg(avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[1h])))",
           "legendFormat": "selected targets (1h)",
           "refId": "B"
         }
@@ -412,7 +412,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "label_replace((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}), \"target\", \"$1\", \"instance\", \"https?://(([[][^]]+[]])|([0-9]{1,3}([.][0-9]{1,3}){3})|([^/:.]+)).*\")",
+          "expr": "label_replace((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"https?://(([[][^]]+[]])|([0-9]{1,3}([.][0-9]{1,3}){3})|([^/:.]+)).*\")",
           "format": "table",
           "instant": true,
           "legendFormat": "{{target}}",
@@ -420,7 +420,7 @@
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "min by (instance) (probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}) and on(instance) (avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[30d])) * 100 \u003c 99)",
+          "expr": "min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}) and on(instance) (avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99)",
           "format": "table",
           "instant": true,
           "legendFormat": "current state",
@@ -428,7 +428,7 @@
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "(1 - avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[30d]))) * 720 and on(instance) ((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"${target:regex}\"}))",
+          "expr": "(1 - avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d]))) * 720 and on(instance) ((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}))",
           "format": "table",
           "instant": true,
           "legendFormat": "estimated unavailable hours",
