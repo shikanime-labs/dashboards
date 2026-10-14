@@ -375,19 +375,31 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": { "thresholdsStyle": { "mode": "dashed" } },
-          "mappings": [],
-          "max": 100,
-          "min": 0,
+          "custom": {
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "lineWidth": 1, "mode": "dashed" }
+          },
+          "max": 1.001,
+          "min": 0.94,
           "thresholds": {
+            "fillColor": "rgba(255, 0, 0, 0.1)",
+            "fillOpacity": 10,
             "mode": "absolute",
             "steps": [
               { "color": "green", "value": null },
-              { "color": "red", "value": 99 }
-            ]
+              { "color": "red", "value": 0.99 }
+            ],
+            "style": "dashed"
           },
-          "unit": "percent"
+          "unit": "percentunit"
         },
         "overrides": []
       }
@@ -472,33 +484,61 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "editorMode": "code",
           "expr": "label_replace((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"https?://(([[][^]]+[]])|([0-9]{1,3}([.][0-9]{1,3}){3})|([^/:.]+)).*\")",
           "format": "table",
           "instant": true,
           "legendFormat": "{{target}}",
-          "range": false,
           "refId": "A"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "editorMode": "code",
-          "expr": "min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}) and on(instance) ((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}))",
+          "expr": "min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}) and on(instance) (avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99)",
           "format": "table",
           "instant": true,
           "legendFormat": "current state",
-          "range": false,
           "refId": "B"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "editorMode": "code",
           "expr": "(1 - avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d]))) * 720 and on(instance) ((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}))",
           "format": "table",
           "instant": true,
           "legendFormat": "estimated unavailable hours",
-          "range": false,
           "refId": "C"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": { "byField": "instance", "mode": "outerTabular" }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "__name__": true,
+              "Time": true,
+              "Time #A": true,
+              "Time #B": true,
+              "Time #C": true,
+              "job": true,
+              "prometheus": true
+            },
+            "indexByName": {
+              "Value #A": 2,
+              "Value #B": 1,
+              "Value #C": 3,
+              "instance": 4,
+              "target": 0
+            },
+            "renameByName": {
+              "Value #A": "30d availability",
+              "Value #B": "Current",
+              "Value #C": "Estimated unavailable (h)",
+              "instance": "Links",
+              "target": "Target"
+            }
+          }
         }
       ],
       "fieldConfig": {
@@ -520,30 +560,91 @@
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "current" },
+            "matcher": { "id": "byName", "options": "Target" },
+            "properties": [{ "id": "custom.width", "value": 180 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Current" },
             "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": { "type": "color-background" }
-              },
-              { "id": "unit", "value": "short" },
               {
                 "id": "mappings",
                 "value": [
                   {
                     "type": "value",
                     "options": {
-                      "0": { "color": "red", "index": 1, "text": "DOWN" },
-                      "1": { "color": "green", "index": 0, "text": "UP" }
+                      "0": { "color": "red", "index": 0, "text": "DOWN" },
+                      "1": { "color": "green", "index": 1, "text": "UP" }
                     }
                   }
                 ]
-              }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": { "type": "color-background-solid" }
+              },
+              { "id": "custom.width", "value": 100 }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "Time" },
-            "properties": [{ "id": "custom.hidden", "value": true }]
+            "matcher": { "id": "byName", "options": "30d availability" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "decimals", "value": 2 },
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 100 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "green", "value": 99 }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              { "id": "custom.width", "value": 260 }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Estimated unavailable (h)"
+            },
+            "properties": [
+              { "id": "unit", "value": "h" },
+              { "id": "decimals", "value": 1 },
+              { "id": "custom.width", "value": 190 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Links" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "data-links" } },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "url": "/d/blackbox/blackbox?var-target=${__value.raw:percentencode}\u0026from=now-30d\u0026to=now",
+                    "targetBlank": false,
+                    "title": "View trend"
+                  },
+                  {
+                    "url": "${__value.raw}",
+                    "targetBlank": true,
+                    "title": "Open endpoint"
+                  }
+                ]
+              },
+              { "id": "custom.width", "value": 200 }
+            ]
           }
         ]
       }
