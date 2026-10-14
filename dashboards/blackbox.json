@@ -411,7 +411,7 @@
     },
     {
       "type": "bargauge",
-      "description": "Days until TLS expiry for the ten soonest-to-expire certificates among selected targets. Red under 21 days means schedule the renewal; the fleet cert rotates roughly every 90 days, so a sudden cluster at the same low value is the shared ingress certificate renewing — expected, not an incident.",
+      "description": "Days until TLS expiry for the ten soonest-to-expire certificates among selected targets. Red under 14 days means schedule the renewal; certificates are 90-day Let's Encrypt certs issued per app, so values cluster in renewal waves — a group at the same low value is a wave nearing renewal, not an incident.",
       "id": 44,
       "pluginVersion": "12.4.2",
       "title": "TLS certificates expiring soonest (days)",
