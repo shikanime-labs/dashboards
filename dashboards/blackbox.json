@@ -419,8 +419,15 @@
       "gridPos": { "h": 10, "w": 12, "x": 0, "y": 22 },
       "options": {
         "displayMode": "gradient",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
         "namePlacement": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
@@ -436,8 +443,9 @@
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
-          "expr": "label_replace(bottomk(10, (probe_ssl_earliest_cert_expiry{job=\"blackbox\", instance=~\"$target\"} - time()) / 86400 and on(instance) probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"(?:https?://)?([^/:.]+).*\"",
+          "expr": "label_replace(bottomk(10, (probe_ssl_earliest_cert_expiry{job=\"blackbox\", instance=~\"$target\"} - time()) / 86400 and on(instance) probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"(?:https?://)?([^/:.]+).*\")",
           "instant": true,
+          "legendFormat": "{{target}}",
           "range": false,
           "refId": "A"
         }
@@ -447,6 +455,8 @@
           "color": { "mode": "thresholds" },
           "decimals": 1,
           "mappings": [],
+          "max": 90,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -455,7 +465,7 @@
               { "color": "green", "value": 30 }
             ]
           },
-          "unit": "none"
+          "unit": "short"
         },
         "overrides": []
       }
@@ -477,7 +487,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "label_replace((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"(?:https?://)?([^/:.]+).*\"",
+          "expr": "label_replace((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"(?:https?://)?([^/:.]+).*\")",
           "format": "table",
           "instant": true,
           "legendFormat": "{{target}}",
