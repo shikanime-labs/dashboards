@@ -59,20 +59,17 @@
         "name": "target",
         "type": "query",
         "allValue": ".*",
+        "definition": "label_values(probe_success{job=\"blackbox\"}, instance)",
         "hide": 0,
         "includeAll": true,
         "label": "Target",
         "multi": true,
         "options": [],
+        "query": "label_values(probe_success{job=\"blackbox\"}, instance)",
         "refresh": 1,
         "sort": 1,
         "current": { "selected": true, "text": "All", "value": "$__all" },
-        "datasource": { "type": "prometheus", "uid": "${datasource}" },
-        "query": {
-          "qryType": 1,
-          "query": "label_values(probe_success{job=\"blackbox\"}, instance)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
-        }
+        "datasource": { "type": "prometheus", "uid": "${datasource}" }
       }
     ]
   },
@@ -92,7 +89,7 @@
       "pluginVersion": "12.4.2",
       "title": "Error budget remaining (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 5 },
       "options": {
         "minVizHeight": 75,
         "minVizWidth": 75,
@@ -123,8 +120,8 @@
             "mode": "absolute",
             "steps": [
               { "color": "red", "value": null },
-              { "color": "yellow", "value": 90 },
-              { "color": "green", "value": 30 }
+              { "color": "yellow", "value": 30 },
+              { "color": "green", "value": 90 }
             ]
           },
           "unit": "percent"
@@ -139,7 +136,7 @@
       "pluginVersion": "12.4.2",
       "title": "Availability (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -185,7 +182,7 @@
       "pluginVersion": "12.4.2",
       "title": "SLO misses (30d)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -231,7 +228,7 @@
       "pluginVersion": "12.4.2",
       "title": "Targets down now",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -276,7 +273,7 @@
       "pluginVersion": "12.4.2",
       "title": "Burn rate",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 5 },
+      "gridPos": { "h": 8, "w": 18, "x": 6, "y": 5 },
       "options": {
         "legend": {
           "calcs": [],
@@ -413,32 +410,27 @@
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 }
     },
     {
-      "type": "barchart",
+      "type": "bargauge",
       "description": "Days until TLS expiry for the ten soonest-to-expire certificates among selected targets. Red under 21 days means schedule the renewal; the fleet cert rotates roughly every 90 days, so a sudden cluster at the same low value is the shared ingress certificate renewing — expected, not an incident.",
       "id": 44,
       "pluginVersion": "12.4.2",
-      "title": "TLS certificates expiring soonest",
+      "title": "TLS certificates expiring soonest (days)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 10, "w": 12, "x": 0, "y": 22 },
       "options": {
-        "barRadius": 0,
-        "barWidth": 0.8,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "auto",
         "orientation": "horizontal",
-        "showValue": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
         "sizing": "auto",
-        "stack": "none",
-        "text": { "titleSize": 12, "valueSize": 12 },
-        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0
+        "valueMode": "color"
       },
       "targets": [
         {
@@ -453,6 +445,7 @@
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
+          "decimals": 1,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -462,7 +455,7 @@
               { "color": "green", "value": 30 }
             ]
           },
-          "unit": "d"
+          "unit": "none"
         },
         "overrides": []
       }
@@ -561,7 +554,7 @@
         "overrides": [
           {
             "matcher": { "id": "byName", "options": "Target" },
-            "properties": [{ "id": "custom.width", "value": 180 }]
+            "properties": []
           },
           {
             "matcher": { "id": "byName", "options": "Current" },
@@ -581,8 +574,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": { "type": "color-background-solid" }
-              },
-              { "id": "custom.width", "value": 100 }
+              }
             ]
           },
           {
@@ -609,8 +601,7 @@
                   "mode": "basic",
                   "valueDisplayMode": "text"
                 }
-              },
-              { "id": "custom.width", "value": 260 }
+              }
             ]
           },
           {
@@ -620,8 +611,7 @@
             },
             "properties": [
               { "id": "unit", "value": "h" },
-              { "id": "decimals", "value": 1 },
-              { "id": "custom.width", "value": 190 }
+              { "id": "decimals", "value": 1 }
             ]
           },
           {
@@ -642,8 +632,7 @@
                     "title": "Open endpoint"
                   }
                 ]
-              },
-              { "id": "custom.width", "value": 200 }
+              }
             ]
           }
         ]
@@ -664,7 +653,7 @@
       "pluginVersion": "12.4.2",
       "title": "p95 duration (10m)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 33 },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -710,7 +699,7 @@
       "pluginVersion": "12.4.2",
       "title": "Fleet probe duration spread",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 18, "x": 6, "y": 33 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 33 },
       "options": {
         "legend": {
           "calcs": [],
