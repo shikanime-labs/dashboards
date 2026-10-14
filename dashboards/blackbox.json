@@ -436,7 +436,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
-          "expr": "label_replace(bottomk(10, (probe_ssl_earliest_cert_expiry{job=\"blackbox\", instance=~\"$target\"} - time()) / 86400 and on(instance) probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"https?://(([[][^]]+[]])|([0-9]{1,3}([.][0-9]{1,3}){3})|([^/:.]+)).*\")",
+          "expr": "label_replace(bottomk(10, (probe_ssl_earliest_cert_expiry{job=\"blackbox\", instance=~\"$target\"} - time()) / 86400 and on(instance) probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"(?:https?://)?([^/:.]+).*\"",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -477,7 +477,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "label_replace((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"https?://(([[][^]]+[]])|([0-9]{1,3}([.][0-9]{1,3}){3})|([^/:.]+)).*\")",
+          "expr": "label_replace((avg by (instance) (avg_over_time(probe_success{job=\"blackbox\", instance=~\"$target\"}[30d])) * 100 \u003c 99) and on(instance) min by (instance) (probe_success{job=\"blackbox\", instance=~\"$target\"}), \"target\", \"$1\", \"instance\", \"(?:https?://)?([^/:.]+).*\"",
           "format": "table",
           "instant": true,
           "legendFormat": "{{target}}",
