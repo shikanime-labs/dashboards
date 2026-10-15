@@ -1,27 +1,47 @@
 {
   "version": 1,
   "preload": false,
-  "uid": "honcho",
+  "timepicker": {},
   "editable": true,
   "refresh": "1m",
   "graphTooltip": 1,
   "weekStart": "",
   "liveNow": false,
-  "timepicker": {},
+  "uid": "honcho",
   "description": "Operational dashboard for the honcho dialectic memory service: API health, deriver pipeline, database pool, usage and process resources.",
   "schemaVersion": 42,
   "fiscalYearStartMonth": 0,
   "title": "Honcho",
-  "timezone": "utc",
-  "annotations": { "list": [] },
+  "timezone": "browser",
   "time": { "from": "now-6h", "to": "now" },
-  "tags": ["honcho", "shikanime", "observability"],
+  "tags": ["shikanime", "honcho"],
   "links": [
     {
       "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/honcho.json",
-      "title": "Dashboard source"
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Dashboard source",
+      "tooltip": "View the dashboard JSON source on GitHub",
+      "type": "link"
     }
   ],
+  "annotations": {
+    "list": [
+      {
+        "name": "Annotations \u0026 Alerts",
+        "type": "dashboard",
+        "builtIn": 1,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" }
+      }
+    ]
+  },
   "templating": {
     "list": [
       {
@@ -33,6 +53,7 @@
         "options": [],
         "query": "prometheus",
         "refresh": 1,
+        "regex": "",
         "current": {
           "selected": true,
           "text": "VictoriaMetrics",
