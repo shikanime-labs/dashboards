@@ -351,7 +351,7 @@
           "expr": "histogram_quantile(0.95, sum by (le) (rate(api_request_duration_seconds_bucket{job=\"honcho\"}[$__rate_interval])))",
           "legendFormat": "p95",
           "range": true,
-          "refId": "A"
+          "refId": "B"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
@@ -359,7 +359,7 @@
           "expr": "histogram_quantile(0.99, sum by (le) (rate(api_request_duration_seconds_bucket{job=\"honcho\"}[$__rate_interval])))",
           "legendFormat": "p99",
           "range": true,
-          "refId": "A"
+          "refId": "C"
         }
       ],
       "fieldConfig": {
