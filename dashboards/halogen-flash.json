@@ -1,62 +1,23 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "12.4.2"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
-  "annotations": {
-    "list": [
-      {
-        "builtIn": 1,
-        "datasource": {
-          "type": "grafana",
-          "uid": "-- Grafana --"
-        },
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
-      }
-    ]
-  },
+  "version": 1,
+  "preload": false,
+  "timepicker": {},
   "editable": true,
-  "fiscalYearStartMonth": 0,
+  "refresh": "1m",
   "graphTooltip": 1,
+  "weekStart": "",
+  "liveNow": false,
+  "uid": "halogen-flash-monitoring",
+  "description": "Prompt and generation throughput, request concurrency, per-phase latency, token counters and KV cache pressure of the Halogen Flash inference engine.",
+  "schemaVersion": 42,
+  "fiscalYearStartMonth": 0,
+  "title": "Halogen Flash",
+  "timezone": "browser",
+  "time": { "from": "now-3h", "to": "now" },
+  "tags": ["shikanime", "halogen", "halogen-flash", "inference", "llm"],
   "links": [
     {
+      "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/halogen-flash.json",
       "asDropdown": false,
       "icon": "external link",
       "includeVars": false,
@@ -65,205 +26,156 @@
       "targetBlank": true,
       "title": "Dashboard source",
       "tooltip": "View the dashboard JSON source on GitHub",
-      "type": "link",
-      "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/halogen-flash.json"
+      "type": "link"
     }
   ],
+  "annotations": {
+    "list": [
+      {
+        "name": "Annotations \u0026 Alerts",
+        "type": "dashboard",
+        "builtIn": 1,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" }
+      }
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "hide": 2,
+        "includeAll": false,
+        "label": "Datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "current": {
+          "selected": true,
+          "text": "VictoriaMetrics",
+          "value": "VictoriaMetrics"
+        }
+      }
+    ]
+  },
   "panels": [
     {
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
+      "type": "row",
       "id": 100,
       "panels": [],
       "title": "halogen-flash",
-      "type": "row"
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
+      "type": "stat",
       "description": "Prompt processing speed in tokens per second across the fleet, shown only while requests are running.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "tokens/sec"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 1,
-        "w": 8,
-        "h": 4
-      },
       "id": 102,
+      "pluginVersion": "12.4.2",
+      "title": "Prompt Throughput",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 1 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": { "calcs": [], "fields": "", "values": false },
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
-          "expr": "sum(llamacpp:prompt_tokens_seconds) * on() group_left() (sum(llamacpp:requests_processing) > bool 0)",
+          "expr": "sum(llamacpp:prompt_tokens_seconds) * on() group_left() (sum(llamacpp:requests_processing) \u003e bool 0)",
           "legendFormat": "Prompt throughput",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Prompt Throughput",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Text generation speed in tokens per second across the fleet, shown only while requests are running.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": { "mode": "thresholds" },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
           "unit": "tokens/sec"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 8,
-        "y": 1,
-        "w": 8,
-        "h": 4
-      },
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Text generation speed in tokens per second across the fleet, shown only while requests are running.",
       "id": 103,
+      "pluginVersion": "12.4.2",
+      "title": "Generation Throughput",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 1 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": { "calcs": [], "fields": "", "values": false },
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
-          "expr": "sum(llamacpp:predicted_tokens_seconds) * on() group_left() (sum(llamacpp:requests_processing) > bool 0)",
+          "expr": "sum(llamacpp:predicted_tokens_seconds) * on() group_left() (sum(llamacpp:requests_processing) \u003e bool 0)",
           "legendFormat": "Generation throughput",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Generation Throughput",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Share of the halogen KV pool in use.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": { "mode": "thresholds" },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
-          "unit": "percentunit"
+          "unit": "tokens/sec"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 16,
-        "y": 1,
-        "w": 8,
-        "h": 4
-      },
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Share of the halogen KV pool in use.",
       "id": 130,
+      "pluginVersion": "12.4.2",
+      "title": "KV Cache Usage",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": { "calcs": [], "fields": "", "values": false },
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "max(llamacpp:kv_cache_usage_ratio)",
           "legendFormat": "Prompt throughput",
@@ -271,75 +183,49 @@
           "refId": "A"
         }
       ],
-      "title": "KV Cache Usage",
-      "type": "stat"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 5
-      },
-      "id": 106,
-      "panels": [],
-      "title": "Performance",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Requests the halogen-flash server is processing right now.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": { "mode": "thresholds" },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          }
+            "steps": [{ "color": "green", "value": 0 }]
+          },
+          "unit": "percentunit"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 6,
-        "w": 12,
-        "h": 4
-      },
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "id": 106,
+      "panels": [],
+      "title": "Performance",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+    {
+      "type": "stat",
+      "description": "Requests the halogen-flash server is processing right now.",
       "id": 12,
+      "pluginVersion": "12.4.2",
+      "title": "Active Requests",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 12, "x": 0, "y": 6 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": { "calcs": [], "fields": "", "values": false },
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "sum(llamacpp:requests_processing)",
           "legendFormat": "Active requests",
@@ -347,70 +233,40 @@
           "refId": "A"
         }
       ],
-      "title": "Active Requests",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Requests waiting in the queue because every slot is busy. A growing value means demand exceeds capacity \u2014 add a replica or reduce context length.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": { "mode": "thresholds" },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "#EAB839",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 3
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           }
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 6,
-        "w": 12,
-        "h": 4
-      },
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Requests waiting in the queue because every slot is busy. A growing value means demand exceeds capacity — add a replica or reduce context length.",
       "id": 101,
+      "pluginVersion": "12.4.2",
+      "title": "Deferred Requests",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 6 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": { "calcs": [], "fields": "", "values": false },
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "llamacpp:requests_deferred",
           "legendFormat": "Deferred requests",
@@ -418,99 +274,42 @@
           "refId": "A"
         }
       ],
-      "title": "Deferred Requests",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Prompt processing speed per server over time. Flat at zero means idle, not broken.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "tokens/sec",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 15,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
+          "color": { "mode": "thresholds" },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
+              { "color": "green", "value": 0 },
+              { "color": "#EAB839", "value": 1 },
+              { "color": "red", "value": 3 }
             ]
-          },
-          "unit": "sishort"
+          }
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 10,
-        "w": 12,
-        "h": 8
-      },
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Prompt processing speed per server over time. Flat at zero means idle, not broken.",
       "id": 124,
+      "pluginVersion": "12.4.2",
+      "title": "Throughput Prompt",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
       "options": {
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
+          "calcs": ["lastNotNull", "mean", "max"],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "sum by (instance) (llamacpp:prompt_tokens_seconds)",
           "legendFormat": "Prompt",
@@ -518,20 +317,9 @@
           "refId": "A"
         }
       ],
-      "title": "Throughput Prompt",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Generation speed per server over time. The number users experience as response fluency.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -543,74 +331,48 @@
             "drawStyle": "line",
             "fillOpacity": 15,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
           "unit": "sishort"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 10,
-        "w": 12,
-        "h": 8
-      },
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Generation speed per server over time. The number users experience as response fluency.",
       "id": 126,
+      "pluginVersion": "12.4.2",
+      "title": "Throughput Generation",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
       "options": {
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
+          "calcs": ["lastNotNull", "mean", "max"],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "sum by (instance) (llamacpp:predicted_tokens_seconds)",
           "legendFormat": "Generation",
@@ -618,20 +380,80 @@
           "refId": "B"
         }
       ],
-      "title": "Throughput Generation",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Average milliseconds per token. Rising values under constant load mean slower responses \u2014 check memory pressure or thermal throttling on the node.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "tokens/sec",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": 0 }]
+          },
+          "unit": "sishort"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Average milliseconds per token. Rising values under constant load mean slower responses — check memory pressure or thermal throttling on the node.",
+      "id": 108,
+      "pluginVersion": "12.4.2",
+      "title": "Latency per Token",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 18 },
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull", "mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "1000 * sum(rate(llamacpp:prompt_seconds_total[$__rate_interval])) / sum(clamp_min(rate(llamacpp:prompt_tokens_total[$__rate_interval]), 1e-9))",
+          "legendFormat": "Prompt",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "1000 * rate(llamacpp:tokens_predicted_seconds_total[$__rate_interval]) / clamp_min(rate(llamacpp:tokens_predicted_total[$__rate_interval]), 1e-9)",
+          "legendFormat": "Generation",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -643,119 +465,66 @@
             "drawStyle": "line",
             "fillOpacity": 15,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
           "unit": "ms"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 18,
-        "w": 24,
-        "h": 8
-      },
-      "id": 108,
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "id": 109,
+      "panels": [],
+      "title": "Concurrency",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 }
+    },
+    {
+      "type": "timeseries",
+      "description": "Requests the halogen-flash server is processing right now.",
+      "id": 110,
+      "pluginVersion": "12.4.2",
+      "title": "Active Requests",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 27 },
       "options": {
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
+          "calcs": ["lastNotNull", "mean", "max"],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
-          "expr": "1000 * sum(rate(llamacpp:prompt_seconds_total[$__rate_interval])) / sum(clamp_min(rate(llamacpp:prompt_tokens_total[$__rate_interval]), 1e-9))",
-          "legendFormat": "Prompt",
+          "expr": "sum(llamacpp:requests_processing)",
+          "legendFormat": "Requests processing",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "1000 * rate(llamacpp:tokens_predicted_seconds_total[$__rate_interval]) / clamp_min(rate(llamacpp:tokens_predicted_total[$__rate_interval]), 1e-9)",
-          "legendFormat": "Generation",
-          "range": true,
-          "refId": "B"
         }
       ],
-      "title": "Latency per Token",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 26
-      },
-      "id": 109,
-      "panels": [],
-      "title": "Concurrency",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Requests the halogen-flash server is processing right now.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -767,94 +536,57 @@
             "drawStyle": "line",
             "fillOpacity": 100,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "stepBefore",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line+area"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line+area" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           }
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 27,
-        "w": 12,
-        "h": 8
-      },
-      "id": 110,
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Requests waiting in the queue because every slot is busy. A growing value means demand exceeds capacity — add a replica or reduce context length.",
+      "id": 111,
+      "pluginVersion": "12.4.2",
+      "title": "Deferred Requests",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 27 },
       "options": {
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
+          "calcs": ["lastNotNull", "mean", "max"],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
-          "expr": "sum(llamacpp:requests_processing)",
-          "legendFormat": "Requests processing",
+          "expr": "llamacpp:requests_deferred",
+          "legendFormat": "Deferred requests",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Active Requests",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Requests waiting in the queue because every slot is busy. A growing value means demand exceeds capacity \u2014 add a replica or reduce context length.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -866,194 +598,59 @@
             "drawStyle": "line",
             "fillOpacity": 20,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "stepBefore",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "#EAB839",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 3
-              }
+              { "color": "green", "value": 0 },
+              { "color": "#EAB839", "value": 1 },
+              { "color": "red", "value": 3 }
             ]
           }
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 27,
-        "w": 12,
-        "h": 8
-      },
-      "id": 111,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "12.4.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "llamacpp:requests_deferred",
-          "legendFormat": "Deferred requests",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Deferred Requests",
-      "type": "timeseries"
+      }
     },
     {
+      "type": "row",
       "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 35
-      },
       "id": 113,
       "panels": [],
       "title": "Efficiency",
-      "type": "row"
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 }
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
+      "type": "timeseries",
       "description": "Milliseconds per input (prompt) token. Prompt processing is compute-bound; expect lower values on nodes with faster memory bandwidth.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "ms/token",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 15,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 36,
-        "w": 12,
-        "h": 8
-      },
       "id": 116,
+      "pluginVersion": "12.4.2",
+      "title": "Prompt Latency",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 36 },
       "options": {
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
+          "calcs": ["lastNotNull", "mean", "max"],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "1000 * sum(rate(llamacpp:prompt_seconds_total[$__rate_interval])) / sum(clamp_min(rate(llamacpp:prompt_tokens_total[$__rate_interval]), 1e-9))",
           "legendFormat": "Prompt latency/token",
@@ -1061,20 +658,9 @@
           "refId": "A"
         }
       ],
-      "title": "Prompt Latency",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Milliseconds per output (generated) token. This dominates perceived chat latency.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -1086,74 +672,48 @@
             "drawStyle": "line",
             "fillOpacity": 15,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
           "unit": "ms"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 36,
-        "w": 12,
-        "h": 8
-      },
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Milliseconds per output (generated) token. This dominates perceived chat latency.",
       "id": 117,
+      "pluginVersion": "12.4.2",
+      "title": "Generation Latency",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 36 },
       "options": {
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
+          "calcs": ["lastNotNull", "mean", "max"],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "1000 * rate(llamacpp:tokens_predicted_seconds_total[$__rate_interval]) / clamp_min(rate(llamacpp:tokens_predicted_total[$__rate_interval]), 1e-9)",
           "legendFormat": "Generation latency/token",
@@ -1161,20 +721,9 @@
           "refId": "A"
         }
       ],
-      "title": "Generation Latency",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Milliseconds per input (prompt) token. Prompt processing is compute-bound; expect lower values on nodes with faster memory bandwidth.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -1186,74 +735,48 @@
             "drawStyle": "line",
             "fillOpacity": 15,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
-          "unit": "short"
+          "unit": "ms"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 44,
-        "w": 24,
-        "h": 8
-      },
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Milliseconds per input (prompt) token. Prompt processing is compute-bound; expect lower values on nodes with faster memory bandwidth.",
       "id": 131,
+      "pluginVersion": "12.4.2",
+      "title": "KV Cache Tokens",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 44 },
       "options": {
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "mean",
-            "max"
-          ],
+          "calcs": ["lastNotNull", "mean", "max"],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "llamacpp:kv_cache_tokens",
           "legendFormat": "Prompt latency/token",
@@ -1261,88 +784,58 @@
           "refId": "A"
         }
       ],
-      "title": "KV Cache Tokens",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 52
-      },
-      "id": 118,
-      "panels": [],
-      "title": "Diagnostics",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Cumulative prompt tokens processed per server. Read the rate, not the absolute value.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "tokens",
+            "axisLabel": "ms/token",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 15,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
-          "unit": "sishort"
+          "unit": "short"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 53,
-        "w": 12,
-        "h": 8
-      },
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "id": 118,
+      "panels": [],
+      "title": "Diagnostics",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 52 }
+    },
+    {
+      "type": "timeseries",
+      "description": "Cumulative prompt tokens processed per server. Read the rate, not the absolute value.",
       "id": 119,
+      "pluginVersion": "12.4.2",
+      "title": "prompt_tokens_total",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 53 },
       "options": {
         "legend": {
           "calcs": [],
@@ -1350,19 +843,11 @@
           "placement": "bottom",
           "showLegend": false
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "llamacpp:prompt_tokens_total",
           "legendFormat": "prompt_tokens_total",
@@ -1370,20 +855,9 @@
           "refId": "A"
         }
       ],
-      "title": "prompt_tokens_total",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Cumulative generated tokens per server.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -1395,50 +869,36 @@
             "drawStyle": "line",
             "fillOpacity": 15,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
           "unit": "sishort"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 53,
-        "w": 12,
-        "h": 8
-      },
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Cumulative generated tokens per server.",
       "id": 120,
+      "pluginVersion": "12.4.2",
+      "title": "tokens_predicted_total",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 53 },
       "options": {
         "legend": {
           "calcs": [],
@@ -1446,19 +906,11 @@
           "placement": "bottom",
           "showLegend": false
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "llamacpp:tokens_predicted_total",
           "legendFormat": "tokens_predicted_total",
@@ -1466,75 +918,50 @@
           "refId": "A"
         }
       ],
-      "title": "tokens_predicted_total",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Cumulative seconds spent processing prompts per server.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "seconds",
+            "axisLabel": "tokens",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 15,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
-          "unit": "s"
+          "unit": "sishort"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 61,
-        "w": 12,
-        "h": 8
-      },
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Cumulative seconds spent processing prompts per server.",
       "id": 121,
+      "pluginVersion": "12.4.2",
+      "title": "prompt_seconds_total",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 61 },
       "options": {
         "legend": {
           "calcs": [],
@@ -1542,19 +969,11 @@
           "placement": "bottom",
           "showLegend": false
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "llamacpp:prompt_seconds_total",
           "legendFormat": "prompt_seconds_total",
@@ -1562,20 +981,9 @@
           "refId": "A"
         }
       ],
-      "title": "prompt_seconds_total",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Cumulative seconds spent generating tokens per server.",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -1587,50 +995,36 @@
             "drawStyle": "line",
             "fillOpacity": 15,
             "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
             "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 2,
             "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
+            "scaleDistribution": { "type": "linear" },
             "showPoints": "never",
             "showValues": false,
             "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{ "color": "green", "value": 0 }]
           },
           "unit": "s"
         },
         "overrides": []
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 61,
-        "w": 12,
-        "h": 8
-      },
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Cumulative seconds spent generating tokens per server.",
       "id": 122,
+      "pluginVersion": "12.4.2",
+      "title": "tokens_predicted_seconds_total",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 61 },
       "options": {
         "legend": {
           "calcs": [],
@@ -1638,19 +1032,11 @@
           "placement": "bottom",
           "showLegend": false
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }
       },
-      "pluginVersion": "12.4.2",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "llamacpp:tokens_predicted_seconds_total",
           "legendFormat": "tokens_predicted_seconds_total",
@@ -1658,51 +1044,41 @@
           "refId": "A"
         }
       ],
-      "title": "tokens_predicted_seconds_total",
-      "type": "timeseries"
-    }
-  ],
-  "liveNow": false,
-  "preload": false,
-  "refresh": "1m",
-  "schemaVersion": 42,
-  "tags": [
-    "halogen",
-    "halogen-flash",
-    "inference",
-    "llm",
-    "shikanime"
-  ],
-  "templating": {
-    "list": [
-      {
-        "current": {
-          "text": "VictoriaMetrics",
-          "value": "VictoriaMetrics",
-          "selected": true
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "seconds",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": 0 }]
+          },
+          "unit": "s"
         },
-        "hide": 2,
-        "includeAll": false,
-        "label": "Datasource",
-        "name": "datasource",
-        "options": [],
-        "query": "prometheus",
-        "refresh": 1,
-        "regex": "",
-        "type": "datasource"
+        "overrides": []
       }
-    ]
-  },
-  "time": {
-    "from": "now-3h",
-    "to": "now"
-  },
-  "timepicker": {},
-  "timezone": "browser",
-  "title": "Halogen Flash Server",
-  "uid": "halogen-flash-monitoring",
-  "version": 2,
-  "weekStart": "",
-  "gnetId": 25591,
-  "description": "Halogen Flash inference engine metrics"
+    }
+  ]
 }
