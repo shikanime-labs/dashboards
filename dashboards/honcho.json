@@ -17,6 +17,18 @@
   "tags": ["shikanime", "honcho"],
   "links": [
     {
+      "url": "https://github.com/shikanime-labs/manifests/tree/main/apps/honcho",
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Honcho manifests",
+      "tooltip": "",
+      "type": "link"
+    },
+    {
       "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/honcho.json",
       "asDropdown": false,
       "icon": "external link",
