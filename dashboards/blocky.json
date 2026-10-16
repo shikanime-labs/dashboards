@@ -17,6 +17,18 @@
   "tags": ["shikanime", "blocky", "dns", "prometheus"],
   "links": [
     {
+      "url": "https://0xerr0r.github.io/blocky/",
+      "asDropdown": false,
+      "icon": "doc",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Blocky docs",
+      "tooltip": "",
+      "type": "link"
+    },
+    {
       "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/blocky.json",
       "asDropdown": false,
       "icon": "external link",
