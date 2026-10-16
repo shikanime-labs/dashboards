@@ -29,6 +29,18 @@
       "type": "link"
     },
     {
+      "url": "https://github.com/plastic-labs/honcho",
+      "asDropdown": false,
+      "icon": "doc",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Honcho docs",
+      "tooltip": "",
+      "type": "link"
+    },
+    {
       "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/honcho.json",
       "asDropdown": false,
       "icon": "external link",
