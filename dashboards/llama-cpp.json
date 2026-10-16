@@ -17,6 +17,18 @@
   "tags": ["shikanime", "llama.cpp", "llamacpp", "inference", "llm"],
   "links": [
     {
+      "url": "https://github.com/ggml-org/llama.cpp/tree/master/docs",
+      "asDropdown": false,
+      "icon": "doc",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "llama.cpp docs",
+      "tooltip": "",
+      "type": "link"
+    },
+    {
       "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/llama-cpp.json",
       "asDropdown": false,
       "icon": "external link",
