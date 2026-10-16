@@ -29,6 +29,18 @@
       "type": "link"
     },
     {
+      "url": "https://github.com/shikanime-labs/manifests/tree/main/apps/llama-cpp",
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "llama.cpp manifests",
+      "tooltip": "",
+      "type": "link"
+    },
+    {
       "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/llama-cpp.json",
       "asDropdown": false,
       "icon": "external link",
