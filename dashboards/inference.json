@@ -278,7 +278,7 @@
       "type": "row",
       "collapsed": false,
       "id": 6,
-      "title": "Routing",
+      "title": "Routing \u0026 latency",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
     },
     {
@@ -534,20 +534,13 @@
       }
     },
     {
-      "type": "row",
-      "collapsed": false,
-      "id": 11,
-      "title": "Latency detail",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 }
-    },
-    {
       "type": "timeseries",
       "description": "Streaming time to first token, 95th percentile.",
       "id": 12,
       "pluginVersion": "12.4.2",
       "title": "Time to first token p95",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -610,7 +603,7 @@
       "pluginVersion": "12.4.2",
       "title": "TTFT p95 by model",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -669,18 +662,18 @@
     {
       "type": "row",
       "collapsed": false,
-      "id": 14,
-      "title": "Tokens",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 }
+      "id": 11,
+      "title": "Tokens \u0026 FinOps",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 30 }
     },
     {
       "type": "timeseries",
-      "description": "Prompt token flow per model.",
+      "description": "Input and output token flow per model.",
       "id": 15,
       "pluginVersion": "12.4.2",
-      "title": "Input tokens by model",
+      "title": "Token flow by model",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 31 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -695,9 +688,17 @@
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
           "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_sum{gen_ai_token_type=\"input\"}[$__rate_interval]))",
-          "legendFormat": "{{gen_ai_request_model}}",
+          "legendFormat": "{{gen_ai_request_model}} in",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_sum{gen_ai_token_type=\"output\"}[$__rate_interval]))",
+          "legendFormat": "{{gen_ai_request_model}} out",
+          "range": true,
+          "refId": "B"
         }
       ],
       "fieldConfig": {
@@ -738,12 +739,12 @@
     },
     {
       "type": "timeseries",
-      "description": "Generated token flow per model.",
-      "id": 16,
+      "description": "Mean total tokens per request per model — the cost unit for sizing prompts and context.",
+      "id": 23,
       "pluginVersion": "12.4.2",
-      "title": "Output tokens by model",
+      "title": "Tokens per request by model",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 31 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -757,7 +758,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
           "editorMode": "code",
-          "expr": "sum by (gen_ai_request_model) (rate(gen_ai_client_token_usage_sum{gen_ai_token_type=\"output\"}[$__rate_interval]))",
+          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_sum{gen_ai_token_type=~\"input|output\"}[$__range])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_server_request_duration_seconds_count[$__range])), 1e-9)",
           "legendFormat": "{{gen_ai_request_model}}",
           "range": true,
           "refId": "A"
@@ -794,17 +795,10 @@
             "mode": "absolute",
             "steps": [{ "color": "green", "value": 0 }]
           },
-          "unit": "ops/sec"
+          "unit": "short"
         },
         "overrides": []
       }
-    },
-    {
-      "type": "row",
-      "collapsed": false,
-      "id": 17,
-      "title": "FinOps",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 }
     },
     {
       "type": "timeseries",
@@ -813,7 +807,7 @@
       "pluginVersion": "12.4.2",
       "title": "Token spend by served model",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 39 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -884,7 +878,7 @@
       "pluginVersion": "12.4.2",
       "title": "Token spend by provider",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 39 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -955,7 +949,7 @@
       "pluginVersion": "12.4.2",
       "title": "Cache hit savings",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 48 },
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 47 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1001,7 +995,7 @@
       "pluginVersion": "12.4.2",
       "title": "Cache write overhead",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 48 },
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 47 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1043,7 +1037,7 @@
       "pluginVersion": "12.4.2",
       "title": "Reasoning tokens",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 48 },
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 47 },
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1079,74 +1073,11 @@
       }
     },
     {
-      "type": "timeseries",
-      "description": "Mean total tokens per request per model — the cost unit for sizing prompts and context.",
-      "id": 23,
-      "pluginVersion": "12.4.2",
-      "title": "Tokens per request by model",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 18, "y": 48 },
-      "options": {
-        "legend": {
-          "calcs": ["lastNotNull", "mean", "max"],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "editorMode": "code",
-          "expr": "sum by (gen_ai_request_model) (increase(gen_ai_client_token_usage_sum{gen_ai_token_type=~\"input|output\"}[$__range])) / clamp_min(sum by (gen_ai_request_model) (increase(gen_ai_server_request_duration_seconds_count[$__range])), 1e-9)",
-          "legendFormat": "{{gen_ai_request_model}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "tokens/sec",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 15,
-            "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": { "type": "linear" },
-            "showPoints": "never",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [{ "color": "green", "value": 0 }]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      }
-    },
-    {
       "type": "row",
       "collapsed": false,
       "id": 24,
       "title": "Ops health",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 56 }
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 51 }
     },
     {
       "type": "timeseries",
@@ -1155,7 +1086,7 @@
       "pluginVersion": "12.4.2",
       "title": "Failovers: retries and timeouts",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 57 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 52 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -1226,7 +1157,7 @@
       "pluginVersion": "12.4.2",
       "title": "Overload signals",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 57 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 52 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -1297,7 +1228,7 @@
       "pluginVersion": "12.4.2",
       "title": "Decode speed by model",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 65 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 60 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
@@ -1360,7 +1291,7 @@
       "pluginVersion": "12.4.2",
       "title": "Served vs requested model drift",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 65 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 60 },
       "options": {
         "legend": {
           "calcs": ["lastNotNull", "mean", "max"],
