@@ -17,6 +17,18 @@
   "tags": ["shikanime", "halogen", "halogen-flash", "inference", "llm"],
   "links": [
     {
+      "url": "https://github.com/shikanime-labs/manifests/tree/main/apps/halogen-flash",
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Halogen Flash manifests",
+      "tooltip": "",
+      "type": "link"
+    },
+    {
       "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/halogen-flash.json",
       "asDropdown": false,
       "icon": "external link",

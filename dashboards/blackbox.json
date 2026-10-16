@@ -17,6 +17,18 @@
   "tags": ["shikanime", "blackbox", "prometheus", "uptime", "slo"],
   "links": [
     {
+      "url": "https://github.com/prometheus/blackbox_exporter/blob/master/README.md",
+      "asDropdown": false,
+      "icon": "doc",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Blackbox exporter docs",
+      "tooltip": "",
+      "type": "link"
+    },
+    {
       "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/blackbox.json",
       "asDropdown": false,
       "icon": "external link",
