@@ -57,11 +57,11 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
         env:
           HAS_CACHIX: ${{ inputs['cachix-name'] != '' && secrets.CACHIX_AUTH_TOKEN != '' }}
-      - uses: shikanime-studio/actions/checkout@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
+      - uses: shikanime-studio/actions/checkout@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
         with:
           github-token: ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN }}
       - id: direnv
-        uses: shikanime-studio/actions/direnv@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
+        uses: shikanime-studio/actions/direnv@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
       - name: Run flake check
         run: nix flake check --accept-flake-config --no-pure-eval --system "${{ matrix.system }}"
         shell: bash
@@ -102,12 +102,12 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
         env:
           HAS_CACHIX: ${{ inputs['cachix-name'] != '' && secrets.CACHIX_AUTH_TOKEN != '' }}
-      - uses: shikanime-studio/actions/checkout@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
+      - uses: shikanime-studio/actions/checkout@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
         with:
           github-token: ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN }}
       - id: direnv
-        uses: shikanime-studio/actions/direnv@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
-      - uses: shikanime-studio/actions/nix/integration@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
+        uses: shikanime-studio/actions/direnv@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
+      - uses: shikanime-studio/actions/nix/integration@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
         with:
           name: ${{ matrix.name }}
           system: ${{ matrix.system }}
@@ -133,11 +133,11 @@ jobs:
             extra-system-features = kvm
           github_access_token: ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN }}
           install_url: https://releases.nixos.org/nix/nix-2.34.8/install
-      - uses: shikanime-studio/actions/checkout@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
+      - uses: shikanime-studio/actions/checkout@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
         with:
           github-token: ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN }}
       - id: setup-checks-jobs
-        uses: shikanime-studio/actions/nix/setup-checks-jobs@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
+        uses: shikanime-studio/actions/nix/setup-checks-jobs@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
   setup-packages-jobs:
     name: Setup Packages Jobs
     runs-on: ubuntu-latest
@@ -162,8 +162,8 @@ jobs:
             extra-system-features = kvm
           github_access_token: ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN }}
           install_url: https://releases.nixos.org/nix/nix-2.34.8/install
-      - uses: shikanime-studio/actions/checkout@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
+      - uses: shikanime-studio/actions/checkout@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
         with:
           github-token: ${{ steps.createGithubAppToken.outputs.token || secrets.GITHUB_TOKEN }}
       - id: setup-packages-jobs
-        uses: shikanime-studio/actions/nix/setup-packages-jobs@a91a9b57c78121e303aa30aea2d8ed2ee03ff45f # v9
+        uses: shikanime-studio/actions/nix/setup-packages-jobs@8144b45cf1aed7ee09337cbca6b7d94b4693ef5e # v9
