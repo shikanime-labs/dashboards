@@ -90,10 +90,14 @@
         "includeAll": false,
         "label": "Logs datasource",
         "options": [],
-        "query": { "type": "datasource" },
+        "query": "victoriametrics-logs-datasource",
         "refresh": 1,
         "regex": "VictoriaLogs",
-        "current": {}
+        "current": {
+          "selected": true,
+          "text": "VictoriaLogs",
+          "value": "VictoriaLogs"
+        }
       }
     ]
   },
