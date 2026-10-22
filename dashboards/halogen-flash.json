@@ -1269,7 +1269,7 @@
       "targets": [
         {
           "datasource": { "type": "victoriametrics-logs-datasource", "uid": "${logs}" },
-          "expr": "{kubernetes_pod_name=~\"halogen-flash-.*\"} \"host memory left for everything else\"",
+          "expr": "{kubernetes.pod_name=~\"halogen-flash-.*\"} \"host memory left for everything else\"",
           "refId": "A"
         }
       ]
