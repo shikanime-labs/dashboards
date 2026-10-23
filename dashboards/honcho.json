@@ -1742,7 +1742,7 @@
     },
     {
       "id": 25,
-      "title": "Embeddings pending due (due-window)",
+      "title": "Embeddings pending (backfill)",
       "type": "stat",
       "datasource": {
         "type": "prometheus",
@@ -1756,33 +1756,58 @@
       },
       "targets": [
         {
-          "expr": "message_embeddings_pending_due{job=\"honcho\"}",
+          "expr": "max(message_embeddings_pending{job=\"honcho\"})",
           "refId": "A"
         }
       ],
-      "description": "Rows the reconciler counts as due; tracks pending during backfill",
+      "description": "message_embeddings rows still NULL after the 2560-dim ALTER (#3100). Hits 0 when the reconciler drains. RED > 1000, YELLOW > 0.",
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1000
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
         },
         "overrides": []
       },
       "options": {
-        "colorMode": "value",
+        "colorMode": "background_solid",
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
-          ]
-        }
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
       }
     },
     {
       "id": 26,
-      "title": "Embed pending vs queue over time",
-      "type": "stat",
+      "title": "Backlog vs deriver queue",
+      "type": "timeseries",
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -1795,36 +1820,47 @@
       },
       "targets": [
         {
-          "expr": "message_embeddings_pending{job=\"honcho\"}",
+          "expr": "max(message_embeddings_pending{job=\"honcho\"})",
+          "legendFormat": "embeddings pending",
           "refId": "A"
         },
         {
-          "expr": "deriver_queue_items_pending{job=\"honcho\"}",
+          "expr": "sum(deriver_queue_items_pending{job=\"honcho\"})",
+          "legendFormat": "deriver queue",
           "refId": "B"
         }
       ],
-      "description": "Backfill drain (A) against deriver queue depth (B)",
+      "description": "Embedding backfill drain vs the deriver work queue. Queue hits low single digits -> workers go idle and the drain accelerates.",
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 8,
+            "lineWidth": 2,
+            "showPoints": "never"
+          }
         },
         "overrides": []
       },
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
           "calcs": [
-            "lastNotNull"
+            "lastNotNull",
+            "max"
           ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
         }
       }
     },
     {
       "id": 27,
-      "title": "Embeddings pending over time",
+      "title": "Backfill drain rate",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -1838,27 +1874,79 @@
       },
       "targets": [
         {
-          "expr": "message_embeddings_pending{job=\"honcho\"}",
+          "expr": "sum(message_embeddings_pending{job=\"honcho\"})",
+          "legendFormat": "pending",
           "refId": "A"
+        },
+        {
+          "expr": "-sum(increase(message_embeddings_pending{job=\"honcho\"}[5m])) / 5",
+          "legendFormat": "drained /min",
+          "refId": "B"
         }
       ],
-      "description": "drain slope for the 4B backfill window",
+      "description": "Pending count with the per-minute drain rate. Slope down = draining; flat = reconciler starved (check deriver queue in the panel to the left).",
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "decimals": 0,
           "custom": {
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "showPoints": "never"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "drained /min"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "multi",
+          "sort": "desc"
         }
       }
     }
