@@ -228,7 +228,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "100 * sum(rate(authelia_authn_second_factor[$__rate_interval])) or vector(0) / clamp_min(sum(rate(authelia_authn[$__rate_interval])) or vector(0), 1e-9)",
+          "expr": "(100 * sum(rate(authelia_authn_second_factor[$__rate_interval])) / clamp_min(sum(rate(authelia_authn[$__rate_interval])), 1e-9)) or vector(0)",
           "instant": true,
           "legendFormat": "MFA share",
           "range": false,
@@ -316,7 +316,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "100 * sum(rate(blocky_response_total{response_type=\"BLOCKED\"}[$__rate_interval])) or vector(0) / clamp_min(sum(rate(blocky_response_total[$__rate_interval])), 1e-9)",
+          "expr": "(100 * sum(rate(blocky_response_total{response_type=\"BLOCKED\"}[$__rate_interval])) / clamp_min(sum(rate(blocky_response_total[$__rate_interval])), 1e-9)) or vector(0)",
           "instant": true,
           "legendFormat": "DNS blocked %",
           "range": false,
@@ -399,7 +399,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "sum(rate(apiserver_authorization_decisions_total{decision=\"denied\"}[$__rate_interval])) or vector(0) or vector(0)",
+          "expr": "sum(rate(apiserver_authorization_decisions_total{decision=\"denied\"}[$__rate_interval])) or vector(0)",
           "instant": true,
           "legendFormat": "authz denied/s",
           "range": false,
