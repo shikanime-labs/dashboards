@@ -1,0 +1,905 @@
+{
+  "version": 1,
+  "refresh": "1m",
+  "description": "Fleet security posture: certificate hygiene, admission policy enforcement, identity/MFA mix, DNS blocking, and API audit flow. Sources are verified live series from gatekeeper, cert-manager, kube-apiserver, authelia, and blocky.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "weekStart": "",
+  "liveNow": false,
+  "preload": false,
+  "uid": "security",
+  "title": "security",
+  "schemaVersion": 42,
+  "timezone": "browser",
+  "time": { "from": "now-24h", "to": "now" },
+  "tags": ["shikanime", "security"],
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "1h"]
+  },
+  "links": [
+    {
+      "url": "https://github.com/shikanime-labs/dashboards/blob/main/dashboards/security.json",
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Dashboard source",
+      "tooltip": "Dashboard JSON in the shikanime-labs/dashboards repo",
+      "type": "link"
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "current": {
+          "selected": false,
+          "text": "VictoriaMetrics",
+          "value": "VictoriaMetrics"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "name": "Annotations \u0026 Alerts",
+        "type": "dashboard",
+        "builtIn": 1,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "collapsed": false,
+      "description": "Fleet security posture at a glance. A red tile means act now; supporting trend panels sit in the rows below.",
+      "id": 100,
+      "panels": [],
+      "title": "Posture summary",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "description": "Certificates whose Ready condition is False right now. Red when nonzero: the named certificates are listed in the Certificates row and are not being issued or renewed.",
+      "id": 1,
+      "title": "unhealthy certs",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(certmanager_certificate_ready_status{condition=\"False\"} == 1) or vector(0)",
+          "instant": true,
+          "legendFormat": "unhealthy certs",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Certificates expiring within 90 days. Informational: renewal is automated, act only when the days-to-expiry bars in the Certificates row drop under 30.",
+      "id": 2,
+      "title": "certs \u003c 90d",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "count(certmanager_certificate_expiration_timestamp_seconds \u003c time() + 90*86400) or vector(0)",
+          "instant": true,
+          "legendFormat": "certs \u003c 90d",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Gatekeeper admission requests denied or errored per second. The deny verdict has never fired on this fleet, so the healthy value can be 0; a sustained nonzero rate means policy is rejecting or failing admissions.",
+      "id": 3,
+      "title": "denied+err req/s",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(gatekeeper_validation_request_count_total{job=~\"gatekeeper-system/gatekeeper\", admission_status=~\"deny|error\"}[$__rate_interval])) or vector(0)",
+          "instant": true,
+          "legendFormat": "denied+err req/s",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.01 }
+            ]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Share of Authelia authentications that completed a second factor over the window. Low values mean most logins are single-factor; 0 with active first-factor traffic means the second factor is bypassed or broken.",
+      "id": 4,
+      "title": "MFA share",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 1 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "100 * sum(rate(authelia_authn_second_factor[$__rate_interval])) or vector(0) / clamp_min(sum(rate(authelia_authn[$__rate_interval])) or vector(0), 1e-9)",
+          "instant": true,
+          "legendFormat": "MFA share",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 10 },
+              { "color": "green", "value": 50 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Days until the next certificate expires. Red under 7 days, orange under 30: cert-manager renewal should have acted already, check the certificate named in the bars below.",
+      "id": 5,
+      "title": "min cert days",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 6 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "min(certmanager_certificate_expiration_timestamp_seconds - time()) / 86400",
+          "instant": true,
+          "legendFormat": "min cert days",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 7 },
+              { "color": "green", "value": 30 }
+            ]
+          },
+          "unit": "d"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Share of DNS responses that blocky blocked over the window. A spike means a client is hitting blocked domains heavily; 0 for a long window is normal on a quiet network, not a failure.",
+      "id": 6,
+      "title": "DNS blocked %",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 6 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "100 * sum(rate(blocky_response_total{response_type=\"BLOCKED\"}[$__rate_interval])) or vector(0) / clamp_min(sum(rate(blocky_response_total[$__rate_interval])), 1e-9)",
+          "instant": true,
+          "legendFormat": "DNS blocked %",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 20 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "Kube API server audit events per second. Watch the trend, not the absolute value: a sudden collapse to 0 with live traffic means audit logging broke; a spike means unusual API activity worth reviewing.",
+      "id": 7,
+      "title": "audit events/s",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 6 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(apiserver_audit_event_total{job=\"apiserver\"}[$__rate_interval])) or vector(0)",
+          "instant": true,
+          "legendFormat": "audit events/s",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "description": "API requests the authorizer denied per second. Sustained nonzero rates mean something is repeatedly asking for access it does not have; pair with the allowed/denied trend in the Identity row.",
+      "id": 8,
+      "title": "authz denied/s",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 6 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(apiserver_authorization_decisions_total{decision=\"denied\"}[$__rate_interval])) or vector(0) or vector(0)",
+          "instant": true,
+          "legendFormat": "authz denied/s",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.01 }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "description": "Certificate hygiene from cert-manager. The trend shows time-to-expiry for the whole set; the bars name the certificates that need attention.",
+      "id": 101,
+      "panels": [],
+      "title": "Certificates",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 11 }
+    },
+    {
+      "type": "timeseries",
+      "description": "Days until certificate expiry across the whole set, minimum to maximum. Sawtooth resets are healthy renewals; a minimum line that keeps falling without resetting is a certificate heading for expiry.",
+      "id": 9,
+      "title": "days to expiry",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(min(certmanager_certificate_expiration_timestamp_seconds) - time()) / 86400",
+          "legendFormat": "min",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(quantile(0.25, certmanager_certificate_expiration_timestamp_seconds) - time()) / 86400",
+          "legendFormat": "p25",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(avg(certmanager_certificate_expiration_timestamp_seconds) - time()) / 86400",
+          "legendFormat": "avg",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "(max(certmanager_certificate_expiration_timestamp_seconds) - time()) / 86400",
+          "legendFormat": "max",
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": false,
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "d"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "bargauge",
+      "description": "Certificates whose Ready condition is False, one bar per certificate. Empty means every certificate is ready — that is the healthy state, not a broken panel.",
+      "id": 10,
+      "title": "not-ready certificates",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "options": {
+        "name": "auto",
+        "displayMode": "gradient",
+        "maxVsize": 200,
+        "minVsize": 20,
+        "orientation": "auto",
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum by (name, exported_namespace) (certmanager_certificate_ready_status{condition=\"False\"} == 1)",
+          "instant": true,
+          "legendFormat": "{{name}} ({{exported_namespace}})",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "description": "Gatekeeper admission activity and the loaded policy inventory.",
+      "id": 102,
+      "panels": [],
+      "title": "Policy enforcement",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 20 }
+    },
+    {
+      "type": "timeseries",
+      "description": "Gatekeeper validation requests per second by verdict. allow is healthy traffic; a rising deny line is policy actively rejecting resources; any sustained error line means admission requests are failing and pods may be blocked from scheduling.",
+      "id": 11,
+      "title": "admission verdicts",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(gatekeeper_validation_request_count_total{job=~\"gatekeeper-system/gatekeeper\", admission_status=\"allow\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "allow",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(gatekeeper_validation_request_count_total{job=~\"gatekeeper-system/gatekeeper\", admission_status=\"deny\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "deny",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(gatekeeper_validation_request_count_total{job=~\"gatekeeper-system/gatekeeper\", admission_status=\"error\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "error",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": false,
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Constraint templates and mutation policies currently ingested by Gatekeeper. A drop to zero means the policy engine lost its inventory and admissions run unprotected until it recovers.",
+      "id": 12,
+      "title": "loaded policies",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(gatekeeper_constraint_templates{job=~\"gatekeeper-system/gatekeeper\"})",
+          "legendFormat": "constraint templates",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(gatekeeper_mutators{job=~\"gatekeeper-system/gatekeeper\"})",
+          "legendFormat": "mutators",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": false,
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "description": "Authentication volume and factor mix from Authelia, plus API authorization decisions.",
+      "id": 103,
+      "panels": [],
+      "title": "Identity \u0026 access",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 29 }
+    },
+    {
+      "type": "timeseries",
+      "description": "Authelia authentications per second, first factor versus completed second factor. The gap between the lines is single-factor logins; a second-factor line flat at 0 while first-factor climbs means MFA is bypassed or broken.",
+      "id": 13,
+      "title": "authentications",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 30 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(authelia_authn[$__rate_interval])) or vector(0)",
+          "legendFormat": "1st factor",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(authelia_authn_second_factor[$__rate_interval])) or vector(0)",
+          "legendFormat": "2nd factor (MFA)",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": false,
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Kube API authorization decisions per second. denied should hug zero; a persistent denied line is a workload or human repeatedly requesting access it does not hold.",
+      "id": 14,
+      "title": "authorization decisions",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 30 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(apiserver_authorization_decisions_total{decision=\"allowed\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "allowed",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(apiserver_authorization_decisions_total{decision=\"denied\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "denied",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": false,
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "row",
+      "collapsed": false,
+      "description": "DNS-level blocking from blocky, its top clients, and the API server audit stream.",
+      "id": 104,
+      "panels": [],
+      "title": "Network \u0026 audit",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 38 }
+    },
+    {
+      "type": "timeseries",
+      "description": "blocky query volume per second with blocked and cache-served responses. A blocked rate climbing alongside queries means a client is hammering blocked domains; find it in the top clients bars beside this chart.",
+      "id": 15,
+      "title": "dns blocking",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 39 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(blocky_query_total[$__rate_interval])) or vector(0)",
+          "legendFormat": "queries/s",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(blocky_response_total{response_type=\"BLOCKED\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "blocked/s",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(blocky_response_total{response_type=\"CACHED\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "cached/s",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": false,
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "bargauge",
+      "description": "The eight clients issuing the most DNS queries per second. Long-lived leaders are normal infrastructure; a sudden new leader is the suspect behind any blocking spike.",
+      "id": 16,
+      "title": "top dns clients",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 39 },
+      "options": {
+        "name": "auto",
+        "displayMode": "gradient",
+        "maxVsize": 200,
+        "minVsize": 20,
+        "orientation": "auto",
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "topk(8, sum(rate(blocky_query_total[$__rate_interval])) by (client))",
+          "instant": true,
+          "legendFormat": "{{client}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "description": "Kube API server audit events per second. Flat at 0 during active traffic means the audit pipeline is emitting nothing; treat a silent audit stream as a control failure, not quiet.",
+      "id": 17,
+      "title": "api audit stream",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 39 },
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rate(apiserver_audit_event_total{job=\"apiserver\"}[$__rate_interval]))",
+          "legendFormat": "audit events/s",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": false,
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      }
+    }
+  ]
+}
